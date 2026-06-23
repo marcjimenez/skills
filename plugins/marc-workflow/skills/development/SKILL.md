@@ -126,11 +126,38 @@ Execute tasks. Mark complete as you go. Never leave the task file stale.
 6. Move to next task
 
 **Non-negotiable rules:**
-- Search before writing. If a utility exists, use it.
 - Match existing style. Don't impose your preferences.
 - Run tests after EVERY logical chunk, not just at the end.
 - One concern per commit. Atomic changes only.
 - If you discover a new task mid-work, ADD it to todo.md before doing it.
+
+### Don't Reinvent the Wheel (CRITICAL)
+
+Before writing ANY new function, helper, utility, or abstraction, you MUST prove nothing existing solves it. This is not optional.
+
+**Search order (do ALL of these before writing custom code):**
+
+1. **Codebase first** — grep/search the repo for existing utilities, helpers, or patterns that do the same thing. Check shared libs, utils directories, common modules.
+2. **Installed dependencies** — check `package.json`, `pyproject.toml`, `go.mod` for already-installed packages. Read their docs. They likely have a function for what you need.
+3. **Framework built-ins** — check the framework's own API (React hooks, LangGraph utilities, FastAPI dependencies, etc.). Use WebFetch or context7 to read current docs if unsure.
+4. **Well-known maintained libraries** — if nothing installed covers it, check if a highly-vetted, actively-maintained library exists (100k+ downloads/week, recent commits, strong community). You may PROPOSE adding it as a dependency, but explain why.
+
+**What counts as reinventing:**
+- Writing a custom debounce/throttle when lodash is installed
+- Writing date parsing when dayjs/date-fns is available
+- Writing a retry wrapper when the HTTP client has one built in
+- Writing custom validation when zod/pydantic is in the project
+- Writing string utils that exist in the language stdlib
+- Writing a state machine when the framework has one
+- Reimplementing something that exists 3 directories away
+
+**If you catch yourself writing >10 lines for something that feels generic, STOP.** Search again. It almost certainly exists.
+
+**When proposing a new dependency:**
+- Must be actively maintained (commits in last 6 months)
+- Must have significant adoption (not a random GitHub repo)
+- Must solve a real gap (not just "slightly nicer API")
+- Present to user: package name, why needed, alternatives considered
 
 ---
 
@@ -206,8 +233,8 @@ FILE:LINE — Problem. Fix.
 **Subagent 4: Test Adequacy**
 > You are reviewing this diff for test coverage gaps. Check: new functions without tests, new branches without assertions, error paths untested, edge cases (empty, null, boundary values, concurrent access) missing, tests that assert nothing meaningful (smoke-only). Suggest specific test cases.
 
-**Subagent 5: Simplicity + Architecture**
-> You are reviewing this diff for over-engineering and missed reuse. Check: abstractions that serve one caller, utilities that already exist elsewhere in the repo, dead code introduced, import boundary violations, unnecessary indirection layers, things that could be 5 lines but are 50. Also: docs still accurate after this change?
+**Subagent 5: Simplicity + Reinvention Check**
+> You are reviewing this diff for over-engineering and reinvented wheels. For EVERY new function/helper/utility in the diff, answer: does this already exist? Check: (1) elsewhere in this repo (grep for similar function names, patterns), (2) in already-installed dependencies (read package.json/pyproject.toml, check if lodash/date-fns/etc already have this), (3) in the framework's built-in API (React, LangGraph, FastAPI, etc.), (4) in the language stdlib. Also flag: abstractions serving one caller, unnecessary indirection, things that could be 5 lines but are 50, import boundary violations, dead code. If custom code reimplements something available, cite the existing alternative with its import path.
 
 ### Step 3: Triage findings
 
