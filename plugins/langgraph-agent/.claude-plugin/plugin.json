@@ -7,5 +7,6 @@
     "email": "marcjimenez@joinkudos.com"
   },
   "repository": "https://github.com/marcjimenez/skills",
-  "license": "MIT"
+  "license": "MIT",
+  "skills": "./skills/"
 }
