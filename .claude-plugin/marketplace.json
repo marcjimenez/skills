@@ -1,0 +1,25 @@
+{
+  "name": "marcjimenez-skills",
+  "owner": {
+    "name": "Marc Jimenez",
+    "email": "marcjimenez@joinkudos.com"
+  },
+  "metadata": {
+    "description": "Personal Claude Code skills for Marc Jimenez"
+  },
+  "plugins": [
+    {
+      "name": "langgraph-agent",
+      "source": "./plugins/langgraph-agent",
+      "category": "development",
+      "description": "Full-cycle LangGraph agent development workflow for ai-core Nx monorepo. Enforces task tracking, eval analysis, and 5-subagent code review.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Marc Jimenez",
+        "email": "marcjimenez@joinkudos.com"
+      },
+      "repository": "https://github.com/marcjimenez/skills",
+      "license": "MIT"
+    }
+  ]
+}
