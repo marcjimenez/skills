@@ -1,0 +1,12 @@
+{
+  "name": "marc-workflow",
+  "description": "Generic full-cycle development workflow. Enforces requirements grilling, task tracking, and 5-subagent code review on every PR.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Marc Jimenez",
+    "email": "marcjimenez@joinkudos.com"
+  },
+  "repository": "https://github.com/marcjimenez/skills",
+  "license": "MIT",
+  "skills": "./skills/"
+}
