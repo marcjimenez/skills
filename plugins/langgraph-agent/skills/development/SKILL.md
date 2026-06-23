@@ -1,5 +1,5 @@
 ---
-name: development-beta
+name: development
 description: "Full-cycle LangGraph agent development workflow. Use when: building a new agent, implementing a new node, adding features to existing agents, fixing agent bugs, or refactoring agent code in the ai-core monorepo. Triggers on: 'build agent', 'implement node', 'add feature', 'develop', 'new graph', 'fix agent bug'. Enforces task tracking, eval analysis, and 5-subagent deep code review."
 ---
 
