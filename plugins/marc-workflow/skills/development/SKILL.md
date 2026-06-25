@@ -1,6 +1,6 @@
 ---
 name: development
-description: "Full-cycle development workflow with requirements grilling, task tracking, and 7-subagent adversarial code review (including documentation accuracy). MUST invoke when: implementing a feature, fixing a bug, refactoring code, building a new module, adding functionality, or making non-trivial code changes. Triggers on: 'build', 'implement', 'develop', 'add feature', 'fix bug', 'refactor', 'new module', 'create', 'wire up'. Enforces zero-ambiguity requirements, tracked task completion, and adversarial code review before the PR is pushed."
+description: "Full-cycle development workflow with requirements grilling, task tracking, and 8-subagent adversarial code review (including a dedicated reinvented-wheel/DRY audit and documentation accuracy). MUST invoke when: implementing a feature, fixing a bug, refactoring code, building a new module, adding functionality, or making non-trivial code changes. Triggers on: 'build', 'implement', 'develop', 'add feature', 'fix bug', 'refactor', 'new module', 'create', 'wire up'. Enforces zero-ambiguity requirements, tracked task completion, and adversarial code review before the PR is pushed."
 ---
 
 # Development Workflow
@@ -97,7 +97,7 @@ Write `/tmp/tasks/{feature-slug}/todo.md`:
 - [ ] Self-review diff: no debug code, no TODOs, no console.logs
 
 ## Ship
-- [ ] 7-subagent review launched on LOCAL diff (NOT pushed yet)
+- [ ] 8-subagent review launched on LOCAL diff (NOT pushed yet)
 - [ ] All critical/high findings fixed
 - [ ] Documentation reviewed + updated (in sync with code)
 - [ ] Final re-review clean
@@ -191,11 +191,11 @@ Mark verification tasks `[x]`.
 
 ---
 
-## Phase 6: 7-Subagent Adversarial Review, THEN PR
+## Phase 6: 8-Subagent Adversarial Review, THEN PR
 
 CRITICAL ORDERING: The review runs on your LOCAL diff. Do NOT push. Do NOT create the PR. Do NOT commit to a remote. The push + PR creation is the VERY LAST action in Step 5, and only after the review is clean. This is non-negotiable.
 
-### Step 1: Launch 7 review subagents in parallel
+### Step 1: Launch 8 review subagents in parallel
 
 Each subagent receives this context:
 - The full local diff: `git diff main...HEAD` (compare against local main, nothing is pushed)
@@ -228,14 +228,25 @@ FILE:LINE — Problem. Concrete trigger/repro. Fix.
 **Subagent 4: Test Adequacy**
 > You are reviewing this diff for test coverage gaps. Check: new functions without tests, new branches without assertions, error paths untested, edge cases (empty, null, boundary values, concurrent access) missing, tests that assert nothing meaningful (smoke-only), tests that would still pass if the implementation were broken. List each gap as a specific missing test case with its inputs and expected output.
 
-**Subagent 5: Simplicity + Reinvention Check**
-> You are reviewing this diff for over-engineering and reinvented wheels. For EVERY new function/helper/utility in the diff, answer: does this already exist? Check: (1) elsewhere in this repo (grep for similar function names, patterns), (2) in already-installed dependencies (read package.json/pyproject.toml, check if lodash/date-fns/etc already have this), (3) in the framework's built-in API (React, LangGraph, FastAPI, etc.), (4) in the language stdlib. Also flag: abstractions serving one caller, unnecessary indirection, things that could be 5 lines but are 50, import boundary violations, dead code. If custom code reimplements something available, cite the existing alternative with its import path and file:line.
+**Subagent 5: Simplicity + Architecture**
+> You are reviewing this diff for over-engineering. Check: abstractions that serve one caller, unnecessary indirection layers, premature generalization, things that could be 5 lines but are 50, import boundary violations, dead code introduced, state that should be derived not stored. For each finding, show the simpler form. (Reuse / reinvented-wheel issues are NOT your job — Subagent 8 owns that.)
 
 **Subagent 6: Performance + Resources**
 > You are reviewing this diff for performance and resource problems. Check: N+1 queries, work inside loops that belongs outside, unbounded memory growth, missing pagination/limits, blocking calls on hot paths, leaked handles/connections/listeners, redundant recomputation, missing indexes implied by new queries. For each finding, state the scale at which it bites (e.g. "O(n^2) over the items list — degrades past ~1k rows") and the fix.
 
 **Subagent 7: Documentation Accuracy**
 > You are reviewing whether the documentation is still correct and complete after this change. Read the relevant docs for the touched area: README, CONTRIBUTING, architecture docs, ADRs, API/reference docs, changelog, and inline doc comments / docstrings. Check: docs that describe now-changed behavior, signatures, flags, env vars, or endpoints; new public surface (functions, config, commands, schemas) that is undocumented; examples or code snippets in docs that would now fail; setup/usage steps that are now wrong; stale diagrams. For each finding, cite the doc file:line and the exact code change that makes it stale, and state the precise edit needed. Treat missing docs for new public behavior as a high-severity finding.
+
+**Subagent 8: Reinvention / DRY (HIGHLY IMPORTANT)**
+> You are the wheel-reinvention auditor. This is a high-priority review: reinvented code is a default-fail, not a nitpick. For EVERY new function, helper, class, type, constant, or block of logic in the diff, you must prove it does NOT already exist before letting it pass. Search in this exact order and report what you searched:
+> 1. **This repo** — grep for similar names, signatures, and behavior. Check shared/utils/common/lib directories and sibling modules. Duplicated logic 3 directories away still counts.
+> 2. **Installed dependencies** — read `package.json` / `pyproject.toml` / `go.mod` / etc. If the new code reimplements something an installed package already exports (debounce/throttle → lodash, date math → dayjs/date-fns, retry → the HTTP client, validation → zod/pydantic, deep-clone, groupBy, etc.), flag it.
+> 3. **Framework built-ins** — the framework already in use (React hooks, LangGraph utilities, FastAPI dependencies, Django ORM, etc.) likely covers it. Check before allowing a custom version.
+> 4. **Language stdlib** — string/array/collection/path/url helpers that exist in the standard library.
+>
+> Heuristic: any new block >10 lines that feels generic is guilty until proven otherwise. Also flag near-duplicates of code the diff itself introduces in two places (copy-paste).
+>
+> For EVERY finding, cite the existing alternative with its import path and `file:line` (for repo code) or package + exported symbol (for deps), and give the exact replacement. If you genuinely searched all four tiers and found nothing, say so explicitly per new utility — silence is not acceptable. Severity: reimplementing a tested existing utility = high; copy-paste duplication = high; minor near-miss = medium.
 
 ### Step 2: Triage findings
 
@@ -247,7 +258,7 @@ FILE:LINE — Problem. Concrete trigger/repro. Fix.
 ### Step 3: Fix + re-review (max 3 rounds)
 
 1. Fix all critical and high findings (including doc updates)
-2. Re-run ONLY the affected subagents (not all 7)
+2. Re-run ONLY the affected subagents (not all 8)
 3. If new findings surface, fix those too
 4. After 3 rounds, surface any remaining as "known limitations" in the PR description
 
@@ -292,7 +303,7 @@ EOF
 1. **The task file is the source of truth.** Not your memory. Not your feeling of "done." READ IT.
 2. **Phase 2 cannot be skipped.** "Just do it" is not a requirement. Push back.
 3. **Phase 6 cannot be skipped.** Even for "small" changes. Especially for "small" changes. All 7 subagents run.
-4. **Review BEFORE push.** The 7-subagent review runs on the LOCAL diff. Do NOT push or create the PR until the review is clean and docs are synced — that is the last step.
+4. **Review BEFORE push.** The 8-subagent review runs on the LOCAL diff. Do NOT push or create the PR until the review is clean and docs are synced — that is the last step.
 5. **Docs ship with code.** Stale docs are a review failure. The Documentation subagent gates the PR.
 6. **Never commit to main.** Branch + PR. Always.
 7. **Never guess requirements.** Ask. Every time.
