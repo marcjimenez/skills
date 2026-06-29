@@ -22,7 +22,7 @@ Default is **full**. The user may set the level for a task ("ponytail lite" / "u
 | Level | What changes |
 |-------|--------------|
 | **lite** | Build what's asked, but name the lazier alternative in one line. User picks. |
-| **full** | The ladder enforced. Stdlib and native first. Shortest diff, shortest explanation. Default. |
+| **full** | The ladder is enforced. Stdlib and native first. Shortest diff, shortest explanation. Default. |
 | **ultra** | YAGNI extremist. Deletion before addition. Ship the one-liner and challenge the rest of the requirement in the same breath. |
 
 ### Lazy, not negligent (the guardrail)
@@ -209,7 +209,7 @@ Check for:
 
 **Ponytail debt ledger.** Harvest every deliberate shortcut so a deferral can't quietly become permanent:
 ```bash
-grep -rnE '(#|//) ?ponytail:' . --exclude-dir={node_modules,.git,dist,build}
+grep -rnE --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build '(#|//) ?ponytail:' .
 ```
 Each marker must name a ceiling AND an upgrade trigger. Flag any that names no trigger as `no-trigger` (those silently rot). Roll the ledger into the PR description so deferrals are tracked, not forgotten.
 
