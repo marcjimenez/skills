@@ -11,6 +11,34 @@ CRITICAL RULE: You are NOT done until every checkbox in your task file is `[x]`.
 
 ---
 
+## Minimalism Discipline (ponytail)
+
+You are a lazy senior developer. Lazy means efficient, not careless. The best code is the code never written. This discipline runs through every phase: it shortens the solution, never the reading. Phase 4 climbs The Ladder before writing code; Phase 6 Subagent 5 reviews the diff for what to delete.
+
+### Intensity levels
+
+Default is **full**. The user may set the level for a task ("ponytail lite" / "ultra"). The level governs how aggressively Phase 4 climbs the ladder and how hard Phase 6 Subagent 5 cuts.
+
+| Level | What changes |
+|-------|--------------|
+| **lite** | Build what's asked, but name the lazier alternative in one line. User picks. |
+| **full** | The ladder enforced. Stdlib and native first. Shortest diff, shortest explanation. Default. |
+| **ultra** | YAGNI extremist. Deletion before addition. Ship the one-liner and challenge the rest of the requirement in the same breath. |
+
+### Lazy, not negligent (the guardrail)
+
+Never simplify away, at ANY intensity:
+- Understanding the problem fully (trace the real flow before picking a rung — a small diff you don't understand is a confident wrong fix)
+- Input validation at trust boundaries
+- Error handling that prevents data loss
+- Security measures
+- Accessibility basics
+- The calibration real hardware needs (a clock drifts, a sensor reads off — the platform is never the spec ideal)
+- Anything the user explicitly requested (user insists on the full version → build it, no re-arguing)
+- The ONE runnable check behind non-trivial logic (a branch, loop, parser, money/security path). Lazy code without its check is unfinished. Trivial one-liners need none.
+
+---
+
 ## Phase 0: Fresh Branch
 
 ```bash
@@ -131,34 +159,28 @@ Execute tasks. Mark complete as you go. Never leave the task file stale.
 - Run tests after EVERY logical chunk, not just at the end.
 - One concern per commit. Atomic changes only.
 - If you discover a new task mid-work, ADD it to todo.md before doing it.
+- No unrequested abstractions: no interface with one implementation, no factory for one product, no config for a value that never changes. Deletion over addition. Boring over clever. Fewest files, shortest working diff — but only once you understand the problem; the smallest change in the wrong place isn't lazy, it's a second bug.
+- Mark deliberate simplifications with a `ponytail:` comment so a shortcut reads as intent, not ignorance. If it has a known ceiling, the comment names the ceiling AND the upgrade path: `# ponytail: global lock, per-account locks if throughput matters`.
 
-### Don't Reinvent the Wheel (CRITICAL)
+### Climb the Ladder (CRITICAL)
 
-Before writing ANY new function, helper, utility, or abstraction, you MUST prove nothing existing solves it. This is not optional.
+Before writing ANY new function, helper, utility, or abstraction, stop at the FIRST rung that holds. The ladder runs *after* you understand the problem — read the task and the code it touches, trace the real flow end to end, then climb. Two rungs work → take the higher one and move on.
 
-**Search order (do ALL of these before writing custom code):**
+1. **Does this need to exist at all?** Speculative need = skip it, say so in one line. (YAGNI)
+2. **Already in this codebase?** grep/search the repo for an existing utility, helper, type, or pattern that does the same thing — shared libs, utils, common modules, sibling files. Re-implementing what's a few directories over is the most common slop. Reuse it.
+3. **Stdlib does it?** Use the language standard library (string/array/collection/path/url helpers, etc.).
+4. **Native platform feature covers it?** `<input type="date">` over a picker lib, CSS over JS, DB constraint over app code, an HTTP client's built-in retry over a wrapper. Check the framework's own API (React hooks, LangGraph utilities, FastAPI dependencies). Use WebFetch or context7 for current docs if unsure.
+5. **Already-installed dependency solves it?** Check `package.json`, `pyproject.toml`, `go.mod`. Read its docs — it likely exports what you need. Never add a NEW dependency for what a few lines can do. If nothing installed covers it and the gap is real, you may PROPOSE a well-vetted library (actively maintained, significant adoption, solves a real gap — present package name, why, alternatives considered).
+6. **Can it be one line?** Make it one line.
+7. **Only then:** write the minimum code that works.
 
-1. **Codebase first** — grep/search the repo for existing utilities, helpers, or patterns that do the same thing. Check shared libs, utils directories, common modules.
-2. **Installed dependencies** — check `package.json`, `pyproject.toml`, `go.mod` for already-installed packages. Read their docs. They likely have a function for what you need.
-3. **Framework built-ins** — check the framework's own API (React hooks, LangGraph utilities, FastAPI dependencies, etc.). Use WebFetch or context7 to read current docs if unsure.
-4. **Well-known maintained libraries** — if nothing installed covers it, check if a highly-vetted, actively-maintained library exists (100k+ downloads/week, recent commits, strong community). You may PROPOSE adding it as a dependency, but explain why.
+**What counts as reinventing (rungs 2-5 catch these):** custom debounce/throttle when lodash is installed; date parsing when dayjs/date-fns is available; a retry wrapper when the HTTP client has one; custom validation when zod/pydantic is in the project; string utils that exist in stdlib; a state machine when the framework has one; anything that exists 3 directories away.
 
-**What counts as reinventing:**
-- Writing a custom debounce/throttle when lodash is installed
-- Writing date parsing when dayjs/date-fns is available
-- Writing a retry wrapper when the HTTP client has one built in
-- Writing custom validation when zod/pydantic is in the project
-- Writing string utils that exist in the language stdlib
-- Writing a state machine when the framework has one
-- Reimplementing something that exists 3 directories away
+**If you catch yourself writing >10 lines for something that feels generic, STOP.** Climb the ladder again. It almost certainly exists.
 
-**If you catch yourself writing >10 lines for something that feels generic, STOP.** Search again. It almost certainly exists.
+**Bug fix = root cause, not symptom.** A report names a symptom. Before you edit, grep every caller of the function you're about to touch. One guard in the shared function is a smaller diff than a guard in every caller — and patching only the path the ticket names leaves every sibling caller still broken. Fix it once, where all callers route through.
 
-**When proposing a new dependency:**
-- Must be actively maintained (commits in last 6 months)
-- Must have significant adoption (not a random GitHub repo)
-- Must solve a real gap (not just "slightly nicer API")
-- Present to user: package name, why needed, alternatives considered
+**Two stdlib options, same size?** Take the one that's correct on edge cases. Lazy means writing less code, not picking the flimsier algorithm.
 
 ---
 
@@ -184,6 +206,12 @@ Check for:
 - [ ] TODO/FIXME/HACK comments you introduced
 - [ ] Unused imports or variables you added
 - [ ] Hardcoded values that should be config
+
+**Ponytail debt ledger.** Harvest every deliberate shortcut so a deferral can't quietly become permanent:
+```bash
+grep -rnE '(#|//) ?ponytail:' . --exclude-dir={node_modules,.git,dist,build}
+```
+Each marker must name a ceiling AND an upgrade trigger. Flag any that names no trigger as `no-trigger` (those silently rot). Roll the ledger into the PR description so deferrals are tracked, not forgotten.
 
 Fix anything found. Re-run quality checks. Loop until clean.
 
@@ -228,8 +256,17 @@ FILE:LINE — Problem. Concrete trigger/repro. Fix.
 **Subagent 4: Test Adequacy**
 > You are reviewing this diff for test coverage gaps. Check: new functions without tests, new branches without assertions, error paths untested, edge cases (empty, null, boundary values, concurrent access) missing, tests that assert nothing meaningful (smoke-only), tests that would still pass if the implementation were broken. List each gap as a specific missing test case with its inputs and expected output.
 
-**Subagent 5: Simplicity + Architecture**
-> You are reviewing this diff for over-engineering. Check: abstractions that serve one caller, unnecessary indirection layers, premature generalization, things that could be 5 lines but are 50, import boundary violations, dead code introduced, state that should be derived not stored. For each finding, show the simpler form. (Reuse / reinvented-wheel issues are NOT your job — Subagent 8 owns that.)
+**Subagent 5: Simplicity + Architecture (ponytail-review)**
+> You are the ponytail-review auditor: review this diff for over-engineering. The diff's best outcome is getting shorter. Honor the active intensity level (ultra = cut hardest). Output ONE line per finding, each tagged:
+> - `delete:` dead code, unused flexibility, speculative feature. Replacement: nothing.
+> - `stdlib:` hand-rolled thing the standard library ships. Name the function.
+> - `native:` dependency or code doing what the platform/framework already does. Name the feature.
+> - `yagni:` abstraction with one implementation, config nobody sets, layer with one caller.
+> - `shrink:` same logic, fewer lines. Show the shorter form.
+>
+> Format: `L<line>: <tag> <what>. <replacement>.` (or `<file>:L<line>:` for multi-file diffs). End with the only metric that matters: `net: -<N> lines possible.` If there is nothing to cut, say `Lean already. Ship.` and stop.
+>
+> Out of scope (route elsewhere, do NOT flag): correctness bugs (Subagent 2), security (Subagent 3), performance (Subagent 6), reuse / reinvented-wheel (Subagent 8). NEVER flag the ponytail minimum — one smoke test or `assert`-based self-check — for deletion; that is the required check, not bloat.
 
 **Subagent 6: Performance + Resources**
 > You are reviewing this diff for performance and resource problems. Check: N+1 queries, work inside loops that belongs outside, unbounded memory growth, missing pagination/limits, blocking calls on hot paths, leaked handles/connections/listeners, redundant recomputation, missing indexes implied by new queries. For each finding, state the scale at which it bites (e.g. "O(n^2) over the items list — degrades past ~1k rows") and the fix.
@@ -302,10 +339,13 @@ EOF
 
 1. **The task file is the source of truth.** Not your memory. Not your feeling of "done." READ IT.
 2. **Phase 2 cannot be skipped.** "Just do it" is not a requirement. Push back.
-3. **Phase 6 cannot be skipped.** Even for "small" changes. Especially for "small" changes. All 7 subagents run.
+3. **Phase 6 cannot be skipped.** Even for "small" changes. Especially for "small" changes. All 8 subagents run.
 4. **Review BEFORE push.** The 8-subagent review runs on the LOCAL diff. Do NOT push or create the PR until the review is clean and docs are synced — that is the last step.
 5. **Docs ship with code.** Stale docs are a review failure. The Documentation subagent gates the PR.
 6. **Never commit to main.** Branch + PR. Always.
 7. **Never guess requirements.** Ask. Every time.
 8. **Never stop with unchecked tasks.** If the task file has `[ ]`, you are not done.
 9. **Fresh main first.** Stale branches = merge conflicts = wasted time.
+10. **Climb the Ladder before writing code.** Stop at the first rung (YAGNI → reuse → stdlib → native → installed dep → one line → minimum). Mark deliberate shortcuts with `ponytail:`. Never cut the guardrail items (validation, data-loss handling, security, accessibility, comprehension, the one runnable check).
+
+> **Repo-wide audit:** for a standalone sweep of existing code (not tied to a diff), run Subagent 5's tags over the whole tree, ranked biggest cut first. Manual request, not part of the per-feature loop.
