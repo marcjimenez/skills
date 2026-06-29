@@ -1,7 +1,7 @@
 {
   "name": "marc-workflow",
   "description": "Generic full-cycle development workflow. Enforces requirements grilling, task tracking, and 8-subagent adversarial code review (including reinvented-wheel/DRY and documentation-accuracy audits) before every PR.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": {
     "name": "Marc Jimenez",
     "email": "marcjimenez@joinkudos.com"
