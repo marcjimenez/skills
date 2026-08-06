@@ -2,7 +2,7 @@
 # Structural guard for the marcjimenez plugin. Run from the repo root: bash scripts/validate.sh
 # Checks manifests parse, every SKILL.md has valid frontmatter, every /marcjimenez:<name> reference
 # resolves to a real skill, and no stale references remain. Exit non-zero on any failure.
-# Skills may live under category subdirs (skills/engineering/<name>, skills/productivity/<name>).
+# Each skill is a folder one level under skills/ (skills/<name>/SKILL.md).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
