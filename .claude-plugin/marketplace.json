@@ -9,16 +9,16 @@
   },
   "plugins": [
     {
-      "name": "keel",
-      "source": "./plugins/keel",
+      "name": "marcjimenez",
+      "source": "./plugins/marcjimenez",
       "category": "development",
-      "description": "Marc's opinionated full-cycle development workflow as composable skills: research-backed planning (keel:plan, keel:brainstorm), a minimalism-disciplined build loop (keel:implement), and a configurable adversarial code-review panel (keel:code-review).",
+      "description": "Marc's opinionated full-cycle development workflow as composable skills: research-backed planning (marcjimenez:plan, marcjimenez:brainstorm), a minimalism-disciplined build loop (marcjimenez:implement), and a configurable adversarial code-review panel (marcjimenez:code-review).",
       "version": "1.0.0",
       "author": {
         "name": "Marc Jimenez",
         "email": "marc@marcjimenez.dev"
       },
-      "repository": "https://github.com/marcjimenez/keel",
+      "repository": "https://github.com/marcjimenez/skills",
       "license": "MIT"
     }
   ]
