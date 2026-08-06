@@ -28,9 +28,8 @@ cross-platform directory (never written into your repos).
 Orchestrators are user-invoked (typed) and compose the primitives; primitives also auto-fire on matching
 work. `implement` hard-gates `marcjimenez:code-review` before any push.
 
-Skills are organized into `skills/engineering/` and `skills/productivity/` category folders (organizational
-only — the command is always `marcjimenez:<name>`, pinned by each skill's frontmatter `name` and unaffected by the
-folder). `writing-for-agents` lives under productivity; the rest under engineering.
+Each skill is a folder directly under `plugins/marcjimenez/skills/<name>/` (the marketplace plugin loader
+discovers skills one level deep, so no category subfolders).
 
 ### Call graph
 
@@ -100,8 +99,8 @@ settings** (base branch, auto-assign reviewer, branch prefixes); and the **defau
 No MCP server is required — Context7 is reached over its `curl`-able REST API with a `CONTEXT7_API_KEY`; the
 rest are Claude's built-in tools or `gh`. The first time `marcjimenez:code-review` runs with no config, it asks
 once for a depth tier and saves it. Full schema:
-`plugins/marcjimenez/skills/engineering/setup/reference/CONFIG-SCHEMA.md` (code-review fields:
-`plugins/marcjimenez/skills/engineering/code-review/reference/REVIEW-DEPTH.md`).
+`plugins/marcjimenez/skills/setup/reference/CONFIG-SCHEMA.md` (code-review fields:
+`plugins/marcjimenez/skills/code-review/reference/REVIEW-DEPTH.md`).
 
 ## Verify
 
