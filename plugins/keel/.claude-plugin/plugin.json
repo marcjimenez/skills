@@ -1,0 +1,12 @@
+{
+  "name": "keel",
+  "description": "Marc's opinionated full-cycle development workflow as composable skills: research-backed planning (keel:plan, keel:brainstorm), a minimalism-disciplined build loop (keel:implement), and a configurable adversarial code-review panel (keel:code-review). Orchestrators compose model-invoked discipline primitives (research, reuse, coding-style, requirements, task-tracking) with a persistent cross-platform config.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Marc Jimenez",
+    "email": "marc@marcjimenez.dev"
+  },
+  "repository": "https://github.com/marcjimenez/keel",
+  "license": "MIT",
+  "skills": "./skills/"
+}
