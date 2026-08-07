@@ -1,62 +1,69 @@
-# Skills
+# marcjimenez Skills Plugin
 
-Personal Claude Code skills marketplace for Marc Jimenez.
+A composable, opinionated development workflow for Claude Code featuring research-backed planning, code minimalism discipline, and configurable adversarial code review.
 
-## `marcjimenez`
+## Overview
 
-An opinionated full-cycle development workflow as composable skills, in the Matt-Pocock style:
-**user-invoked orchestrators** compose **model-invoked discipline primitives**. Research-backed planning,
-minimalism discipline, and a configurable adversarial code-review panel — with config persisted to a
-cross-platform directory (never written into your repos).
+The `marcjimenez` plugin provides a full-cycle development workflow built on a two-tier architecture:
 
-### Skills
+- **Orchestrators** (user-invoked): High-level workflows that compose primitives into complete development cycles
+- **Primitives** (auto-invoked): Focused discipline skills that enforce quality gates and best practices
 
-| Command | Role | Invocation | What it does |
-|---------|------|-----------|--------------|
-| `/marcjimenez:plan` | Orchestrator | you type it | Research-backed plan with concrete code examples + a task seed |
-| `/marcjimenez:brainstorm` | Orchestrator | you type it | 2–4 approaches with tradeoffs before committing |
-| `/marcjimenez:implement` | Orchestrator | you type it | Full build cycle: branch → requirements → tasks → build → verify → review → PR |
-| `/marcjimenez:setup` | Configurator | you type it | Configure connections + API keys, review depth, VCS/PR, and defaults |
-| `marcjimenez:research` | Primitive | auto | GitHub examples, Context7/WebFetch docs, best practices, reuse hunt |
-| `marcjimenez:requirements` | Primitive | auto | Grill a request to zero ambiguity; gate on confirmation |
-| `marcjimenez:reuse` | Primitive | auto | Climb-the-Ladder reuse doctrine before any new code or dependency |
-| `marcjimenez:coding-style` | Primitive | auto | House style: ponytail minimalism, guardrails, root-cause bug fixes |
-| `marcjimenez:writing-for-agents` | Primitive | auto | House style for skills / CLAUDE.md / agent-facing prose |
-| `marcjimenez:code-review` | Primitive | auto | Configurable adversarial multi-reviewer audit on the local diff |
-| `marcjimenez:task-tracking` | Primitive | auto | Durable task file; not done until every box is `[x]` |
+All configuration and artifacts are stored in a cross-platform directory outside your repositories, ensuring clean separation between tooling and source code.
 
-Orchestrators are user-invoked (typed) and compose the primitives; primitives also auto-fire on matching
-work. `implement` hard-gates `marcjimenez:code-review` before any push.
+## Skills Reference
 
-Each skill is a folder directly under `plugins/marcjimenez/skills/<name>/` (the marketplace plugin loader
-discovers skills one level deep, so no category subfolders).
+### Orchestrators (User-Invoked)
 
-### Call graph
+| Command | Purpose |
+|---------|---------|
+| `/marcjimenez:plan` | Produces research-backed implementation plans with concrete code examples and task breakdowns |
+| `/marcjimenez:brainstorm` | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
+| `/marcjimenez:implement` | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
+| `/marcjimenez:setup` | Configures external connections, API keys, code review depth, VCS settings, and default preferences |
+
+### Primitives (Auto-Invoked)
+
+| Skill | Trigger Condition |
+|-------|------------------|
+| `marcjimenez:research` | Before implementing against unfamiliar APIs or libraries; gathers GitHub examples, official documentation, and best practices |
+| `marcjimenez:requirements` | When build/fix/refactor requests are vague or underspecified; grills requirements to zero ambiguity |
+| `marcjimenez:reuse` | Before writing new functions, helpers, or adding dependencies; enforces the Climb-the-Ladder reuse doctrine |
+| `marcjimenez:coding-style` | Before writing or editing non-trivial code; enforces ponytail minimalism and root-cause bug fixes |
+| `marcjimenez:writing-for-agents` | When creating SKILL.md, CLAUDE.md, or other agent-facing documentation |
+| `marcjimenez:code-review` | After completing implementation, before git push or PR creation; runs adversarial multi-reviewer audit |
+| `marcjimenez:task-tracking` | When starting multi-step work; maintains durable task file with verifiable completion criteria |
+
+The `implement` orchestrator hard-gates code review before any push, ensuring all changes undergo adversarial audit before leaving your local machine.
+
+## Architecture
 
 ```mermaid
 flowchart TD
-    U[you] -->|type| BR[/marcjimenez:brainstorm/]
-    U -->|type| PL[/marcjimenez:plan/]
-    U -->|type| IM[/marcjimenez:implement/]
+    U[Developer] -->|invoke| BR[/marcjimenez:brainstorm/]
+    U -->|invoke| PL[/marcjimenez:plan/]
+    U -->|invoke| IM[/marcjimenez:implement/]
     BR --> RS[marcjimenez:research breadth]
-    BR -.if fuzzy.-> RQ
-    BR -.suggests.-> PL
+    BR -.if requirements unclear.-> RQ
+    BR -.suggests next step.-> PL
     PL --> RQ[marcjimenez:requirements]
     PL --> RSD[marcjimenez:research depth]
     PL --> RU[marcjimenez:reuse]
-    PL -.suggests.-> IM
+    PL -.suggests next step.-> IM
     IM --> RQ
     IM --> TT[marcjimenez:task-tracking]
     IM --> RU
     IM --> CS[marcjimenez:coding-style]
-    IM -.unfamiliar API.-> RSD
-    IM -->|GATE before push| CR[marcjimenez:code-review]
-    CR --> REV[selected reviewers]
+    IM -.if unfamiliar API.-> RSD
+    IM -->|mandatory gate| CR[marcjimenez:code-review]
+    CR --> REV[adversarial review panel]
 ```
 
-## Install
+## Installation
 
-Add the marketplace to `~/.claude/settings.json`:
+### 1. Add Marketplace
+
+Add the skills marketplace to `~/.claude/settings.json`:
 
 ```json
 {
@@ -68,6 +75,8 @@ Add the marketplace to `~/.claude/settings.json`:
 }
 ```
 
+### 2. Enable Plugin
+
 Enable per-project in `.claude/settings.json`:
 
 ```json
@@ -76,41 +85,94 @@ Enable per-project in `.claude/settings.json`:
 }
 ```
 
+### 3. Verify Installation
+
+Run `/skills` in Claude Code and verify that 11 `marcjimenez:*` skills appear in the list.
+
 ## Configuration
 
-Review depth and defaults live in a cross-platform config dir — **never inside your repositories**:
+Configuration and artifacts are stored in a cross-platform directory structure outside your repositories:
 
+**Configuration Home:**
 - macOS / Linux: `${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez`
 - Windows: `%APPDATA%\marcjimenez`
 
+**Directory Structure:**
 ```
-<marcjimenez-home>/global/config.json            # global default (written on first run)
-<marcjimenez-home>/repos/<repo-key>/config.json  # per-repo override (wins over global)
-<marcjimenez-home>/repos/<repo-key>/runs/<slug>/ # durable artifacts: research.md, plan.md, todo.md
-<marcjimenez-home>/secrets.env                    # API keys, chmod 600, sourced by skills (never committed)
+<config-home>/
+├── global/
+│   └── config.json              # Global default settings (created on first run)
+├── repos/
+│   └── <repo-key>/
+│       ├── config.json          # Per-repository overrides
+│       └── runs/
+│           └── <feature-slug>/
+│               ├── research.md  # Research findings
+│               ├── plan.md      # Implementation plan
+│               └── todo.md      # Task tracking file
+└── secrets.env                  # API keys (chmod 600, never committed)
 ```
 
-Precedence: inline args → per-repo config → global config → built-in defaults.
+**Configuration Precedence:**
+Inline arguments → Per-repository config → Global config → Built-in defaults
 
-Run `/marcjimenez:setup` to configure (or reconfigure) it all: **external connections** (Context7, WebSearch,
-WebFetch, `gh`) with on/off toggles and API keys for keyed ones (keys go in `secrets.env`, never in
-`config.json` or the repo); **code-review depth** (`quick`/`standard`/`paranoid`/`custom`); **VCS/PR
-settings** (base branch, auto-assign reviewer, branch prefixes); and the **default minimalism intensity**.
-No MCP server is required — Context7 is reached over its `curl`-able REST API with a `CONTEXT7_API_KEY`; the
-rest are Claude's built-in tools or `gh`. The first time `marcjimenez:code-review` runs with no config, it asks
-once for a depth tier and saves it. Full schema:
-`plugins/marcjimenez/skills/setup/reference/CONFIG-SCHEMA.md` (code-review fields:
-`plugins/marcjimenez/skills/code-review/reference/REVIEW-DEPTH.md`).
+### Initial Setup
 
-## Verify
+Run `/marcjimenez:setup` to configure:
 
-After enabling, confirm the plugin loaded: run `/skills` and check the 11 `marcjimenez:*` entries appear (the
-user-invoked ones — `marcjimenez:plan`, `marcjimenez:brainstorm`, `marcjimenez:implement`, `marcjimenez:setup` — are typed; the rest
-auto-fire).
+- **External Connections:** Enable/disable Context7, WebSearch, WebFetch, and GitHub CLI with API key management
+- **Code Review Depth:** Choose between `quick`, `standard`, `paranoid`, or `custom` reviewer panels
+- **VCS Settings:** Configure base branch, auto-assign reviewers, and branch prefixes
+- **Default Preferences:** Set default code minimalism intensity
 
-To check the plugin's structure (manifests parse, 11 skills with valid frontmatter, all `/marcjimenez:*`
-references resolve, no stale references):
+**Note:** No MCP server required. Context7 is accessed via its REST API using `CONTEXT7_API_KEY`. All other integrations use Claude's built-in tools or the `gh` CLI.
+
+If you run `marcjimenez:code-review` before configuring, you'll be prompted once to select a review depth tier, which will be saved automatically.
+
+**Configuration Schema:**
+- Full schema: `plugins/marcjimenez/skills/setup/reference/CONFIG-SCHEMA.md`
+- Code review fields: `plugins/marcjimenez/skills/code-review/reference/REVIEW-DEPTH.md`
+
+## Validation
+
+Validate the plugin structure (manifests, frontmatter, skill references):
 
 ```bash
 bash scripts/validate.sh
 ```
+
+This checks that manifests parse correctly, all 11 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
+
+## Plugin Structure
+
+Each skill is stored as a folder directly under `plugins/marcjimenez/skills/<name>/` (the marketplace plugin loader discovers skills one level deep, so no nested category folders are used).
+
+## Key Features
+
+### Research-Backed Planning
+The `research` primitive gathers evidence before code is written: existing repository utilities, GitHub implementation examples, official documentation via Context7, best practices, and known pitfalls.
+
+### Ponytail Minimalism
+The `coding-style` primitive enforces a lazy senior developer approach where the best code is the code never written. Emphasizes deletion over addition, boring over clever, and the shortest working diff.
+
+### Climb-the-Ladder Reuse Doctrine
+The `reuse` primitive prevents reinvention by enforcing a hierarchy: YAGNI → existing repository code → standard library → framework features → installed dependencies → one-liner → minimum new code.
+
+### Adversarial Code Review
+The `code-review` primitive runs configurable multi-reviewer audits on local diffs before any push. Reviewers are explicitly adversarial, assuming code is broken until proven otherwise.
+
+### Hard Gates
+Critical quality checks (requirements clarity, code review) are mandatory gates that cannot be bypassed. Code review runs on the local diff and must pass before any git push or PR creation.
+
+### Durable Task Tracking
+The `task-tracking` primitive maintains a task file outside the repository with concrete verification criteria for each task. Work is not considered complete until every checkbox is marked.
+
+## Author
+
+**Marc Jimenez**  
+Email: marc@marcjimenez.dev  
+Repository: [github.com/marcjimenez/skills](https://github.com/marcjimenez/skills)
+
+## License
+
+MIT

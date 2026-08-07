@@ -32,6 +32,19 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDAT
 [ -f "$CONFIG_HOME/secrets.env" ] && . "$CONFIG_HOME/secrets.env"
 ```
 
+If a connection with `auth: "api_key"` is enabled but the key is missing from secrets.env:
+
+1. Use AskUserQuestion to request the API key: "Context7 is enabled but CONTEXT7_API_KEY is not set. Please provide your Context7 API key:"
+2. Write it to `$CONFIG_HOME/secrets.env` with proper format and permissions:
+   ```bash
+   echo "CONTEXT7_API_KEY=<user-provided-key>" >> "$CONFIG_HOME/secrets.env"
+   chmod 600 "$CONFIG_HOME/secrets.env"
+   ```
+3. Source the secrets.env file and proceed with the research call
+4. Never echo or log the API key value
+
+Apply this pattern for any keyed connection (WebSearch API, etc.).
+
 If no config resolves, all built-in connections are on by default. If every external connection is off,
 say so in the brief and rely on the reuse hunt + repo evidence alone.
 
