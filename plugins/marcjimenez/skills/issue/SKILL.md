@@ -1,7 +1,11 @@
 ---
 name: issue
-description: Draft a GitHub issue, present it once for confirmation, then file it with the repo's own labels, project and assignees. Learns each repo's filing conventions from its existing issues rather than asking cold, and persists them so the question is answered once. Use whenever the user wants to create, file, open, or draft a GitHub issue or ticket, or says "make a ticket for this".
-disable-model-invocation: true
+description: >-
+  Draft a GitHub issue, present it once for confirmation, then file it with the repo's own labels,
+  project and assignees. Learns each repo's filing conventions from its existing issues rather than
+  asking cold, and persists them so the question is answered once. Use PROACTIVELY whenever the user
+  wants to create, file, open, or draft a GitHub issue or ticket. Triggers on: "make a ticket",
+  "create an issue", "file an issue", "open an issue", "make a github issue", "draft a ticket".
 ---
 
 # GitHub issue — draft, confirm, file
