@@ -51,6 +51,39 @@ paranoid: convention, logic, security, test, simplicity, performance, documentat
 
 Apply `defaults.ponytail_intensity` (default `full`) to the Simplicity reviewer.
 
+## 0.5 Commit first, and treat writing agents as dangerous
+
+**Commit the work before launching anything that can write.** A reviewer or mutation tester edits source to
+prove a finding, and its restore step is usually `git checkout -- <file>`, which silently discards *your*
+uncommitted work in that file.
+
+This has happened. Five fixes were reverted twice mid-review, and one revert left an `if` block deleted
+that had been removed to prove a mutation — which would have shipped a field admins could never change.
+It was caught by the type checker and the linter, not by noticing.
+
+- Commit before delegating. A clean tree makes `git checkout` harmless.
+- Never run two writing agents against the same file.
+- After any agent that mutated source: re-run typecheck, lint and tests, and diff against the commit.
+  Do not trust a "restored" claim.
+
+## 0.6 Two cheap greps worth running every time
+
+Both caught defects that six prose-reading reviewers missed.
+
+```bash
+# A control byte makes a file binary to git, so its entire content is invisible in every diff, now and
+# in future PRs. A NUL used as a map delimiter hid 3.6KB of new code from the whole panel.
+git diff "$BASE"...HEAD --stat | grep -i " Bin " && echo "^ binary to git: unreviewable"
+```
+
+## 0.7 Mocks cannot verify a foreign engine
+
+Raw SQL, regexes over real input, and wire-format strings must be **executed** against the real engine
+before being called verified. A mocked `query()` proves the code path, never the statement. Two defects in
+one change passed unit tests and prose review and appeared only on execution: a bind parameter the
+warehouse refused to type (`-$1` over `unknown`), and an `ESCAPE '\'` clause that left the string literal
+unterminated because that engine reads a backslash inside a literal as its own escape.
+
 ## 1. Launch the selected reviewers in parallel
 
 Each reviewer receives the full local diff. Inside `/marcjimenez:implement` (work already committed) that is
