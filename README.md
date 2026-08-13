@@ -107,7 +107,7 @@ Configuration and artifacts are stored in a cross-platform directory structure o
 ```
 <config-home>/
 ├── global/
-│   └── config.json              # Global default settings (created on first run)
+│   └── config.json              # Global default settings (written by /marcjimenez:setup)
 ├── repos/
 │   └── <repo-key>/
 │       ├── config.json          # Per-repository overrides
@@ -127,13 +127,13 @@ Inline arguments → Per-repository config → Global config → Built-in defaul
 Run `/marcjimenez:setup` to configure:
 
 - **External Connections:** Enable/disable Context7, WebSearch, WebFetch, and GitHub CLI with API key management
-- **Code Review Depth:** Choose between `quick`, `standard`, `paranoid`, or `custom` reviewer panels
+- **Code Review:** Adaptive by default (triage selects the reviewers each diff warrants from all eight); optionally narrow the candidate set or disable triage
 - **VCS Settings:** Configure base branch, auto-assign reviewers, and branch prefixes
 - **Default Preferences:** Set default code minimalism intensity
 
 **Note:** No MCP server required. Context7 is accessed via its REST API using `CONTEXT7_API_KEY`. All other integrations use Claude's built-in tools or the `gh` CLI.
 
-If you run `marcjimenez:code-review` before configuring, you'll be prompted once to select a review depth tier, which will be saved automatically.
+Code review works out of the box with no configuration: the triage pass adapts to each diff automatically.
 
 **Configuration Schema:**
 - Full schema: `plugins/marcjimenez/skills/setup/reference/CONFIG-SCHEMA.md`
@@ -165,7 +165,7 @@ The `coding-style` primitive enforces a lazy senior developer approach where the
 The `reuse` primitive prevents reinvention by enforcing a hierarchy: YAGNI → existing repository code → standard library → framework features → installed dependencies → one-liner → minimum new code.
 
 ### Adversarial Code Review
-The `code-review` primitive runs multi-reviewer audits on local diffs before any push. A triage pass reads the diff and runs only the reviewers it warrants (a docs fix skips the security reviewer; an auth change keeps it), drawn from a configurable depth pool. Reviewers are explicitly adversarial, assuming code is broken until proven otherwise.
+The `code-review` primitive runs multi-reviewer audits on local diffs before any push. A triage pass reads the diff and runs only the reviewers it warrants from the full set of eight (a docs fix skips the security reviewer; an auth change keeps it). Reviewers are explicitly adversarial, assuming code is broken until proven otherwise.
 
 ### Best-Practices Auditing
 The `best-practices` primitive judges an approach against how well-regarded GitHub projects and official docs actually do the same thing, reporting each divergence with a SHA-pinned citation and a concrete fix. It runs during planning and implementation as advisory guidance, and as a mandatory blocking pass in code review where every finding must be resolved or explicitly waived.

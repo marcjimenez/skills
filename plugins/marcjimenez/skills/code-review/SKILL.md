@@ -2,12 +2,11 @@
 name: code-review
 description: >-
   Runs the adversarial multi-reviewer audit on a LOCAL diff before any push or PR. A triage pass reads the
-  diff and runs only the reviewers it warrants — Convention, Logic, Security, Test, Simplicity/YAGNI,
-  Performance, Documentation, Reinvention/DRY — drawn from a user-chosen depth pool, plus a mandatory
-  best-practices audit against real-world GitHub patterns. MUST run after implementation is complete and
-  BEFORE git push / gh pr create whenever a code diff exists. Use PROACTIVELY at the pre-PR gate. Triggers
-  on: "review this", "before the PR", "ready to push", a finished feature, pre-merge. Reviews the local diff
-  and does NOT push.
+  diff and runs only the reviewers it warrants from the full set of eight — Convention, Logic, Security,
+  Test, Simplicity/YAGNI, Performance, Documentation, Reinvention/DRY — plus a mandatory best-practices audit
+  against real-world GitHub patterns. MUST run after implementation is complete and BEFORE git push / gh pr
+  create whenever a code diff exists. Use PROACTIVELY at the pre-PR gate. Triggers on: "review this", "before
+  the PR", "ready to push", a finished feature, pre-merge. Reviews the local diff and does NOT push.
 ---
 
 # Code review — adversarial panel on the local diff
@@ -27,42 +26,35 @@ TOP="$(git rev-parse --show-toplevel)"
 REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
 ```
 
-1. Inline args on this invocation (`--tier`, `--reviewers`, `--threshold`) — ephemeral, never written.
+1. Inline args on this invocation (`--reviewers`, `--threshold`, `--no-adaptive`) — ephemeral, never written.
 2. `$CONFIG_HOME/repos/$REPO_KEY/config.json` — per-repo override.
 3. `$CONFIG_HOME/global/config.json` — global user default.
-4. Built-in `standard` preset (below).
+4. Built-in defaults (below).
 
-**If none of files 2–3 exist → FIRST RUN (do NOT run a long questionnaire):** ask ONE AskUserQuestion —
-"How deep should code review go on this repo?" options `quick (3)`, `standard (6)`, `paranoid (8)`,
-`Customize…`. A tier pick → write it to `$CONFIG_HOME/global/config.json` and proceed (never re-asked, any
-repo). `Customize…` → tell the user to run `/marcjimenez:setup`; proceed THIS run with `standard`. Headless (can't
-prompt) → write `standard` to global, print one line, proceed.
+Review works out of the box — there is no first-run questionnaire and no depth tier to choose. Triage adapts
+to each diff automatically.
 
 Full JSON schema and field semantics: `reference/REVIEW-DEPTH.md`.
 
-### Resolve the reviewer pool
+### The reviewer candidate set
 
-The tier sets the POOL of reviewers eligible to run — a ceiling, not a fixed roster. The triage in §0.5
-picks the subset of this pool the diff actually warrants.
+Triage (§0.5) selects from a candidate set of all eight reviewers by default:
+`convention, logic, security, test, simplicity, performance, documentation, reinvention`.
 
-- tier in {quick, standard, paranoid} → the baked-in pool below; ignore `reviewers`.
-- tier == custom → the `reviewers` list is the pool.
+- `code_review.reviewers` (string[], optional) REPLACES the candidate set when present — triage picks only
+  from these. Use it to permanently drop a reviewer a repo never needs (e.g. omit `documentation` in a repo
+  with no docs). Omit it to keep all eight in play.
+- `code_review.adaptive` (default `true`): set `false` to skip triage and run the entire candidate set every
+  time.
 
-```
-quick pool:    logic, security, reinvention
-standard pool: convention, logic, security, test, simplicity, reinvention
-paranoid pool: convention, logic, security, test, simplicity, performance, documentation, reinvention
-```
-
-Apply `defaults.ponytail_intensity` (default `full`) to the Simplicity reviewer. Set
-`code_review.adaptive: false` to skip triage and run the whole pool (the old fixed-roster behavior).
+Apply `defaults.ponytail_intensity` (default `full`) to the Simplicity reviewer.
 
 ## 0.5 Triage — select the reviewers this diff warrants
 
-Read the diff first, then pick from the pool ONLY the reviewers whose concern the change actually raises. The
-goal is a relevant panel, not a big one: a docs typo does not need the security reviewer; an auth change must
-have it. This is the fix for reviews that felt heavy-handed — you run three sharp reviewers, not eight rote
-ones. Map the diff to reviewers:
+Read the diff first, then pick from the candidate set ONLY the reviewers whose concern the change actually
+raises. The goal is a relevant panel, not a big one: a docs typo does not need the security reviewer; an auth
+change must have it. This is the fix for reviews that felt heavy-handed — you run three sharp reviewers, not
+eight rote ones. Map the diff to reviewers:
 
 | Include this reviewer when the diff… | Reviewer |
 | --- | --- |
@@ -75,20 +67,21 @@ ones. Map the diff to reviewers:
 | changes public surface (API, flags, env, commands) or touches docs | `documentation` |
 | adds any new function, helper, util, type, or dependency | `reinvention` |
 
-`logic` and `reinvention` are the floor for any change carrying real code — but triage only NARROWS the pool,
-never adds a reviewer the tier excludes. If a custom pool deliberately omits one of them, honor the pool and
-state plainly that no correctness/reinvention reviewer ran. If triage would otherwise select nothing (pure
-formatting or whitespace), run `logic` when it is in the pool and say why.
+`logic` and `reinvention` are the floor for any change carrying real code — include them whenever they are in
+the candidate set. Triage only NARROWS the candidate set; it never runs a reviewer the set excludes. If the
+set was trimmed via `code_review.reviewers` to omit one of them, honor that and state plainly that no
+correctness/reinvention reviewer ran. If triage would otherwise select nothing (pure formatting or
+whitespace), run `logic` when it is in the set and say why.
 
 Print the decision in one block before running, e.g.:
 > Reviewing with: logic, security, reinvention — auth-touching diff that adds a new helper.
-> Skipped from pool: convention, test, simplicity — no new files, existing tests cover it, net deletion.
+> Skipped: convention, test, simplicity — no new files, existing tests cover it, net deletion.
 
 ## 1. Launch the selected reviewers + the best-practices audit (parallel)
 
 Launch the reviewers triage selected in §0.5, and IN PARALLEL invoke `/marcjimenez:best-practices` in `review`
-mode on the same diff. The best-practices audit runs on EVERY review — it is not one of the pool reviewers and
-triage never drops it — and judges the diff against how well-regarded projects do the same thing.
+mode on the same diff. The best-practices audit runs on EVERY review — it is not one of the eight candidate
+reviewers and triage never drops it — and judges the diff against how well-regarded projects do the same thing.
 
 Each reviewer receives the full local diff. Inside `/marcjimenez:implement` (work already committed) that is
 `git diff "$BASE"...HEAD`. For a standalone review with uncommitted work, include the working tree too:

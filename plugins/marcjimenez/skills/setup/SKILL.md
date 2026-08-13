@@ -51,10 +51,11 @@ run it inline yourself if the user explicitly asks — and name that transcript 
 
 ## 2. Code-review depth
 
-Propose a tier from a read-only repo scan (language, test framework, `grep -rlE 'auth|payment|crypto|token|secret'`
-→ suggest `paranoid` for sensitive code). Let the user pick `quick`/`standard`/`paranoid`/`custom` (custom =
-multiselect over the 8 reviewers) plus `confidence_threshold`, `max_rounds`, `adversarial_verification`.
-Field detail: `/marcjimenez:code-review` `reference/REVIEW-DEPTH.md`.
+Code review is adaptive by default — triage picks the reviewers each diff warrants from all eight, so there
+is nothing required here. Offer the optional knobs only: `reviewers` (a shorter candidate set to permanently
+drop reviewers a repo never needs), `adaptive: false` (run every reviewer on every diff), plus
+`confidence_threshold`, `max_rounds`, `adversarial_verification`. Field detail: `/marcjimenez:code-review`
+`reference/REVIEW-DEPTH.md`.
 
 ## 3. VCS / PR settings
 

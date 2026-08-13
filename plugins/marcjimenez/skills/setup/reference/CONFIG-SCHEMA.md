@@ -14,7 +14,7 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
 {
   "defaults": { "ponytail_intensity": "full" },
 
-  "code_review": { "tier": "standard", "...": "see /marcjimenez:code-review reference/REVIEW-DEPTH.md" },
+  "code_review": { "adaptive": true, "...": "see /marcjimenez:code-review reference/REVIEW-DEPTH.md" },
 
   "connections": {
     "context7":   { "enabled": true,  "auth": "api_key", "env_var": "CONTEXT7_API_KEY" },
@@ -35,9 +35,9 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
 ## `defaults` and `code_review`
 
 `defaults.ponytail_intensity` (`lite|full|ultra`) is the shared minimalism default. The `code_review`
-section (tier, reviewers, thresholds, verification) is owned and documented by `/marcjimenez:code-review` in its
-`reference/REVIEW-DEPTH.md` — read that for its field detail; presets and the first-run flow live in
-code-review's `SKILL.md`.
+section (adaptive, reviewers, thresholds, verification, waivers) is owned and documented by
+`/marcjimenez:code-review` in its `reference/REVIEW-DEPTH.md` — read that for its field detail; the candidate set
+and triage mapping live in code-review's `SKILL.md`.
 
 ## `connections`
 
