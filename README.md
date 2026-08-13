@@ -27,12 +27,14 @@ All configuration and artifacts are stored in a cross-platform directory outside
 | Skill | Trigger Condition |
 |-------|------------------|
 | `marcjimenez:research` | Before implementing against unfamiliar APIs or libraries; gathers GitHub examples, official documentation, and best practices |
+| `marcjimenez:best-practices` | During planning, implementation, and review; audits the approach against real-world GitHub patterns and flags divergences with citations |
 | `marcjimenez:requirements` | When build/fix/refactor requests are vague or underspecified; grills requirements to zero ambiguity |
 | `marcjimenez:reuse` | Before writing new functions, helpers, or adding dependencies; enforces the Climb-the-Ladder reuse doctrine |
 | `marcjimenez:coding-style` | Before writing or editing non-trivial code; enforces ponytail minimalism and root-cause bug fixes |
 | `marcjimenez:writing-for-agents` | When creating SKILL.md, CLAUDE.md, or other agent-facing documentation |
-| `marcjimenez:code-review` | After completing implementation, before git push or PR creation; runs adversarial multi-reviewer audit |
+| `marcjimenez:code-review` | After completing implementation, before git push or PR creation; triages the diff to a relevant reviewer subset plus a mandatory best-practices audit |
 | `marcjimenez:task-tracking` | When starting multi-step work; maintains durable task file with verifiable completion criteria |
+| `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions and drafts the body in its idiom |
 
 The `implement` orchestrator hard-gates code review before any push, ensuring all changes undergo adversarial audit before leaving your local machine.
 
@@ -49,14 +51,18 @@ flowchart TD
     PL --> RQ[marcjimenez:requirements]
     PL --> RSD[marcjimenez:research depth]
     PL --> RU[marcjimenez:reuse]
+    PL --> BP[marcjimenez:best-practices]
     PL -.suggests next step.-> IM
     IM --> RQ
     IM --> TT[marcjimenez:task-tracking]
     IM --> RU
     IM --> CS[marcjimenez:coding-style]
     IM -.if unfamiliar API.-> RSD
+    IM -.if uses dep or pattern.-> BP
     IM -->|mandatory gate| CR[marcjimenez:code-review]
-    CR --> REV[adversarial review panel]
+    CR --> TRI[triage: relevant reviewers only]
+    CR -->|mandatory| BP
+    TRI --> REV[adversarial review panel]
 ```
 
 ## Installation
@@ -87,7 +93,7 @@ Enable per-project in `.claude/settings.json`:
 
 ### 3. Verify Installation
 
-Run `/skills` in Claude Code and verify that 11 `marcjimenez:*` skills appear in the list.
+Run `/skills` in Claude Code and verify that 13 `marcjimenez:*` skills appear in the list.
 
 ## Configuration
 
@@ -141,7 +147,7 @@ Validate the plugin structure (manifests, frontmatter, skill references):
 bash scripts/validate.sh
 ```
 
-This checks that manifests parse correctly, all 11 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
+This checks that manifests parse correctly, all 13 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
 
 ## Plugin Structure
 
@@ -159,7 +165,10 @@ The `coding-style` primitive enforces a lazy senior developer approach where the
 The `reuse` primitive prevents reinvention by enforcing a hierarchy: YAGNI → existing repository code → standard library → framework features → installed dependencies → one-liner → minimum new code.
 
 ### Adversarial Code Review
-The `code-review` primitive runs configurable multi-reviewer audits on local diffs before any push. Reviewers are explicitly adversarial, assuming code is broken until proven otherwise.
+The `code-review` primitive runs multi-reviewer audits on local diffs before any push. A triage pass reads the diff and runs only the reviewers it warrants (a docs fix skips the security reviewer; an auth change keeps it), drawn from a configurable depth pool. Reviewers are explicitly adversarial, assuming code is broken until proven otherwise.
+
+### Best-Practices Auditing
+The `best-practices` primitive judges an approach against how well-regarded GitHub projects and official docs actually do the same thing, reporting each divergence with a SHA-pinned citation and a concrete fix. It runs during planning and implementation as advisory guidance, and as a mandatory blocking pass in code review where every finding must be resolved or explicitly waived.
 
 ### Hard Gates
 Critical quality checks (requirements clarity, code review) are mandatory gates that cannot be bypassed. Code review runs on the local diff and must pass before any git push or PR creation.

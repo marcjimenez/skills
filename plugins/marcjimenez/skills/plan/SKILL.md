@@ -22,7 +22,11 @@ explicit reuse decisions. Writes a plan artifact; does NOT write product code.
 3. **Decide build-vs-reuse.** Invoke `/marcjimenez:reuse` and record, for each new piece, the highest ladder rung
    that holds — what you will reuse (with import paths) and what you will therefore NOT build.
 
-4. **Write the plan** to `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/plan.md` using
+4. **Check prior art.** Invoke `/marcjimenez:best-practices` in `advisory` mode on the chosen approach so the plan
+   reflects proven design patterns and idiomatic dependency use, not just a workable sketch. It builds on the
+   research brief from step 2; fold its guidance into the code examples in the next step.
+
+5. **Write the plan** to `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/plan.md` using
    `reference/PLAN-TEMPLATE.md`. The plan MUST contain concrete **code examples** adapted to the repo's
    conventions, each with a source citation, plus a **Task seed** of atomic checkboxes with `verify:`
    fields.

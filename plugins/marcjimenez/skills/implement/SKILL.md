@@ -38,7 +38,11 @@ list; get confirmation before coding.
 
 1. Implement the task. Before writing new code, the reuse + style disciplines apply automatically:
    `/marcjimenez:reuse` (climb the ladder before any new function/util/dep) and `/marcjimenez:coding-style` (ponytail
-   minimalism, guardrails, match repo conventions). On hitting an unfamiliar API, `/marcjimenez:research`.
+   minimalism, guardrails, match repo conventions). On hitting an unfamiliar API, `/marcjimenez:research`. When the
+   task makes non-trivial use of a dependency, framework, or pattern (a new integration, an unfamiliar API,
+   or a usage not already established in the repo), invoke `/marcjimenez:best-practices` in `advisory` mode so
+   the code follows how the ecosystem does it well; skip it for routine use of an already-adopted dependency
+   in an already-established way.
 2. Run its `verify:` check. If it fails → fix → re-run until green.
 3. Mark `[x]` in the task file.
 4. Commit at logical boundaries (conventional prefix). One concern per commit.
@@ -71,7 +75,8 @@ If `vcs.assign_reviewer` is true, assign each reviewer in `vcs.reviewers` (defau
 ## Phase 6 — Completion
 
 Read the task file top to bottom. Every line must be `[x]` — if any is `[ ]`, go back and finish it. Report
-to the user: PR URL, review findings addressed, doc updates, any known limitations.
+to the user: PR URL, review findings addressed, doc updates, any best-practices divergences waived (with
+reasons), any known limitations.
 
 ## Inviolable rules
 
