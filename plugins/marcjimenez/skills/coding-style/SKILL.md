@@ -29,6 +29,37 @@ over anything here. Match existing style; don't impose your preferences.
   ignorance. If it has a known ceiling, the comment names the ceiling AND the upgrade path:
   `# ponytail: global lock, per-account locks if throughput matters`.
 
+## Comments get the same minimalism
+
+Prose is not exempt from the diet. Two tests before any comment survives: could a reader who has never
+seen the code have written it just from the code (Ousterhout), and does it explain **why** rather than
+**what** (Google)? A comment needed to explain *what* is a refactoring signal, not a writing task.
+
+The failure mode to watch for is **commit-message content leaking into source**: how the bug was found,
+what was tried, what changed. The code carries facts about its present state; the commit carries the story
+of the edit.
+
+In TypeScript, `/** */` is for consumers and `//` is for maintainers — a JSDoc block on a module-private
+helper is usually the wrong form. Never restate types the signature already gives.
+
+**Do not set a ratio target.** SonarQube shipped a 25% comment-density gate and deprecated it in 2022,
+because it is *"very artificial"* and developers write fake comments to turn the gate green. Use smells
+instead: a comment block longer than the code it introduces, or one covering several unrelated topics, and
+push each comment down to the narrowest scope it applies to.
+
+The real reason to write fewer is rot. Across 1,500 systems, code and comments co-evolve in only **7%** of
+method changes, so nearly every comment you write will drift. Read `reference/COMMENTS.md` for the
+anti-pattern table, the substitutions to try first, the counterweight against cutting too far, and sources.
+
+## Never commit throwaway scripts
+
+Ad-hoc verification harnesses, e2e drivers and probe scripts stay in the scratchpad. Paste their output
+into the PR instead. The repo carries code that CI runs and the team maintains; a script needing a running
+server and a token is neither, so it rots and misleads people into thinking it is a gate. It also brings
+its own review burden — an e2e harness written this way turned out to contain a code injection, because it
+interpolated externally-sourced names into a shell and Python. If a check deserves to be permanent, write
+it as a real test.
+
 ## Intensity + guardrails
 
 The intensity level (lite / full / ultra) governs how hard you cut. Default is **full**. The guardrail

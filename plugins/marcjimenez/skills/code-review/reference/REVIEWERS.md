@@ -8,6 +8,15 @@ robustness rules and output format in `SKILL.md`.
 > first. Check: naming conventions, import ordering, file organization, commit message format, code comment
 > style, TypeScript/Python idioms. Cross-reference at least 3 existing files in the same area to confirm the
 > real convention before flagging. Flag every deviation. Confidence 80+ only.
+>
+> Include a comment audit against `coding-style/reference/COMMENTS.md`. Do NOT flag on a comment-to-code
+> ratio; there is no defensible threshold and enforcing one produces fake comments. Flag instead: any
+> comment block longer than the code it introduces, any block covering 3+ unrelated topics that should be
+> pushed down to the lines each applies to. Flag by category: restates the code, explains HOW, debug
+> narrative or edit history that belongs in the commit message, essay where a clause would do, and the same
+> explanation repeated at 2+ sites. In TypeScript also flag `/** */` used for module-private implementation
+> comments, and any docstring restating types the signature already gives. Quote the comment and give the
+> shorter replacement, not just the objection.
 
 ## `logic` — Logic + Correctness
 > You are reviewing this diff for bugs. Think adversarially. Check: off-by-one errors, null/undefined
