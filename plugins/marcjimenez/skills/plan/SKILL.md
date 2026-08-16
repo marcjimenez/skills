@@ -41,30 +41,14 @@ The plan artifact lives under `$CONFIG_HOME` — never inside the target repo.
 
 ## End
 
-Present the plan summary (1-2 sentences of what will be built and what will be reused), then ask for implementation approval using AskUserQuestion:
+Present the plan summary (1-2 sentences of what will be built and what will be reused), then hand off. Do NOT
+invoke `/marcjimenez:implement` yourself: it is user-invoked only (`disable-model-invocation`), so the Skill tool
+blocks it. Tell the user to run it:
 
 > Plan ready at `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/plan.md`
-> 
+>
 > [1-2 sentence summary]
-> 
-> Proceed with implementation?
+>
+> Run `/marcjimenez:implement` to build it — it picks up this plan's artifacts (research.md, plan.md) by slug.
 
-If user confirms (yes / y / go / proceed / build / build it / let's do it / confirmed):
-  Invoke /marcjimenez:implement using the Skill tool:
-  
-  ```
-  Skill({
-    skill: "marcjimenez:implement",
-    args: ""
-  })
-  ```
-  
-  Implement will auto-detect the plan artifacts (research.md, plan.md) by slug and adopt them.
-
-If user declines (no / n / not yet / later / skip):
-  Exit cleanly:
-  
-  > Plan saved. Run `/marcjimenez:implement` when you're ready to build.
-
-If user wants to review first (show / review / details / show me the plan):
-  Display the full plan.md contents, then re-ask the approval question.
+If the user asks to review first, display the full plan.md, then repeat the run line.
