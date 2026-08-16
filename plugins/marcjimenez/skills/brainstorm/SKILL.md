@@ -34,12 +34,17 @@ REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/nu
 
 ## End
 
-Present the options with pros/cons/tradeoffs, state your recommendation, then hand off. Do NOT invoke
-`/marcjimenez:plan` yourself: it is user-invoked only (`disable-model-invocation`), so the Skill tool blocks it.
-Tell the user to run it:
+Present the options with pros/cons/tradeoffs, state your recommendation, then ask if the user wants to proceed:
 
 > Explored [N] approaches. Recommended: [APPROACH] because [REASON].
 >
-> Run `/marcjimenez:plan` to expand this approach into a full plan.
+> Proceed to detailed planning of this approach?
 
-If the user prefers a different option, note which one so the plan targets it, then repeat the run line.
+If the user confirms (yes / y / go / plan it / proceed):
+  Invoke `/marcjimenez:plan` with the chosen approach as context.
+
+If the user picks a different option (option N / use approach N):
+  Note which one, then invoke `/marcjimenez:plan` with that approach.
+
+If the user declines (no / not yet / let me think):
+  > Approaches documented. Run `/marcjimenez:plan` when ready.
