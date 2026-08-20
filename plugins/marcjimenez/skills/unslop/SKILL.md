@@ -81,8 +81,8 @@ catalog those two lack and the concrete rewrite moves. Follow them; do not resta
 
 ## The rewrite moves (code)
 
-- Delete comments that narrate the line; keep only a non-obvious why, a hidden invariant, or a named
-  workaround (canonical rules: `/marcjimenez:coding-style` `reference/COMMENTS.md`).
+- Delete comments that narrate the line; which comments to keep is owned by `/marcjimenez:coding-style`
+  `reference/COMMENTS.md`.
 - Collapse single-use abstractions and premature interfaces; inline the one call site.
 - Remove dead code, unused imports, leftover debug prints, and "TODO: implement" stubs shipped as done.
 - De-duplicate genuine repetition once past the rule of three; before that, leave it.

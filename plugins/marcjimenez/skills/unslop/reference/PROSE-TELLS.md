@@ -1,8 +1,10 @@
 # Prose slop tells
 
-Signal strength: S (strong, flag on sight), M (medium), W (weak, flag only when clustered or dense, since
-it also appears in good human writing). "Greppable" means a regex or word-list catches it mechanically;
-the rest need judgment. No single tell is a verdict; weigh by density (see SKILL.md doctrine).
+Signal strength: S (strong), M (medium), W (weak, also common in good human writing). "Greppable" means a
+regex or word-list catches it mechanically; the rest need judgment. Weigh every tell by density (SKILL.md
+doctrine): a lone tell is rarely slop, a cluster is, and S tells count more per occurrence than W tells, so
+fewer of them tip a passage over. A few tells are genuine flag-on-sight because they almost never appear in
+earnest human writing; those are marked "flag on sight" inline below.
 
 ## Vocabulary (S, greppable)
 
@@ -29,16 +31,17 @@ Inflated words that spike in model output. Flag when several cluster; a lone one
 
 ## Openers and filler (S, greppable)
 
-- Era opener: "In today's fast-paced world...", "In an era where..." Delete the sentence; start with the
-  point.
+- Era opener (flag on sight): "In today's fast-paced world...", "In an era where..." Delete the sentence;
+  start with the point.
 - "It's worth noting that" / "It's important to note that". The note is the sentence; drop the frame.
 - "Let's dive in" / "deep dive". Delete; show the thing.
-- Sycophantic opener: "Great question!", "Absolutely!", "I'd be happy to help." Delete; answer directly.
+- Sycophantic opener (flag on sight): "Great question!", "Absolutely!", "I'd be happy to help." Delete;
+  answer directly.
 
 ## Constructions (S/M, needs pattern match)
 
-- "It's not just X, it's Y" (S). The single most notorious construction. Rewrite as a direct statement:
-  "It's a linter that also enforces style."
+- "It's not just X, it's Y" (S, flag on sight). The single most notorious construction. Rewrite as a
+  direct statement: "It's a linter that also enforces style."
 - "not X, but Y" / "not only... but also" (M, flag on repetition of 3+). Rewrite to a plain declarative.
 - Copula avoidance (S, greppable): "serves as / stands as / functions as / acts as" replacing "is/are".
   Restore the copula.

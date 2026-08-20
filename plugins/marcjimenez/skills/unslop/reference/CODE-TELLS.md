@@ -7,10 +7,10 @@ file cites them rather than restating them.
 
 ## Comments
 
-- Narrating the line: `// increment the counter` above `counter++`; `// loop through users`. Delete. Keep
-  only a non-obvious why, a hidden invariant, or a named workaround. (Canonical: COMMENTS.md.)
+- Narrating the line: `// increment the counter` above `counter++`; `// loop through users`. Delete. Which
+  comments earn their place is owned by COMMENTS.md.
 - Pro-forma docstrings on trivial private helpers: a full docstring on a two-line internal function.
-  Strip it; keep docstrings on exported/public surfaces and non-obvious contracts.
+  Strip it; the public-versus-private docstring rule is in COMMENTS.md.
 - Section-divider and banner comments: `# ===== USER AUTH =====`, ASCII banners, emoji-prefixed headers.
   Delete; let module and function structure organize the file.
 

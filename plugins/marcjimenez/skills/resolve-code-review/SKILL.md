@@ -21,7 +21,10 @@ a LOCAL diff before the PR. This one resolves comments that already exist on the
 ## 0. Load config and resolve the PR
 
 Read the `vcs` section of config.json (schema: `/marcjimenez:setup` `reference/CONFIG-SCHEMA.md`) for
-`base_branch` and any `resolve_code_review` knobs (auto-reply-to-bots, auto-resolve; defaults below).
+`base_branch`, plus the optional `resolve_code_review` knobs `auto_reply_bots` (default true: a clear
+rebuttal to a bot posts autonomously) and `auto_resolve` (default true: resolve a thread once its comment
+is addressed, reversible via `unresolveReviewThread`). Rebuttals to human reviewers are always printed
+before posting, regardless of these knobs.
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
