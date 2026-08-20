@@ -33,6 +33,8 @@ All configuration and artifacts are stored in a cross-platform directory outside
 | `marcjimenez:coding-style` | Before writing or editing non-trivial code; enforces ponytail minimalism and root-cause bug fixes |
 | `marcjimenez:writing-for-agents` | When creating SKILL.md, CLAUDE.md, or other agent-facing documentation |
 | `marcjimenez:code-review` | After completing implementation, before git push or PR creation; triages the diff to a relevant reviewer subset plus a mandatory best-practices audit |
+| `marcjimenez:resolve-code-review` | After a PR has review comments; fetches every thread, states a take, resolves the self-explanatory ones autonomously, and batches the rest into a single Q&A session |
+| `marcjimenez:unslop` | Whenever writing or editing prose or non-trivial code; removes AI-slop tells by density and rewrites to plain natural language, rejecting both slop and clipped over-correction |
 | `marcjimenez:task-tracking` | When starting multi-step work; maintains durable task file with verifiable completion criteria |
 | `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions and drafts the body in its idiom |
 
@@ -63,6 +65,15 @@ flowchart TD
     CR --> TRI[triage: relevant reviewers only]
     CR -->|mandatory| BP
     TRI --> REV[adversarial review panel]
+    U -->|invoke| RCR[/marcjimenez:resolve-code-review/]
+    RCR --> RCRF[fetch PR review threads]
+    RCRF --> RCRT[take + two-bucket gate]
+    RCRT -.self-explanatory.-> RCRA[fix+reply+resolve / rebut+resolve]
+    RCRT -.needs assumption.-> RCRQ[batched Q&A with user]
+    RCRT -.valid code change.-> TT
+    RCR --> US[marcjimenez:unslop]
+    RCRT -.valid code change.-> PL
+    US -.rewrites all prose+code.-> U
 ```
 
 ## Installation
@@ -93,7 +104,7 @@ Enable per-project in `.claude/settings.json`:
 
 ### 3. Verify Installation
 
-Run `/skills` in Claude Code and verify that 13 `marcjimenez:*` skills appear in the list.
+Run `/skills` in Claude Code and verify that 15 `marcjimenez:*` skills appear in the list.
 
 ## Configuration
 
@@ -147,7 +158,7 @@ Validate the plugin structure (manifests, frontmatter, skill references):
 bash scripts/validate.sh
 ```
 
-This checks that manifests parse correctly, all 13 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
+This checks that manifests parse correctly, all 15 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
 
 ## Plugin Structure
 
@@ -169,6 +180,12 @@ The `code-review` primitive runs multi-reviewer audits on local diffs before any
 
 ### Best-Practices Auditing
 The `best-practices` primitive judges an approach against how well-regarded GitHub projects and official docs actually do the same thing, reporting each divergence with a SHA-pinned citation and a concrete fix. It runs during planning and implementation as advisory guidance, and as a mandatory blocking pass in code review where every finding must be resolved or explicitly waived.
+
+### Review Comment Resolution
+The `resolve-code-review` skill works through the review comments on an existing pull request. It fetches every thread, states a take on each, and splits them: self-explanatory comments are handled autonomously (fix, reply with the commit, and resolve the thread, or rebut a false-positive and resolve), while any comment that turns on a product or scope assumption is batched into a single Q&A session rather than acted on blindly. Valid comments that need real code changes are queued and chained into planning and implementation. This is distinct from `code-review`, which audits a local diff before the PR exists.
+
+### Anti-Slop Writing
+The `unslop` primitive removes the tells that mark prose and code as machine-generated, and it runs on essentially all writing. It flags by density rather than on single words, rewrites to plain natural language, and rejects both AI-slop and the clipped over-correction that reads as caveman prose. It never claims to detect authorship and never gates on a score. `resolve-code-review` runs its rebuttals and Q&A questions through it, so all reviewer- and user-facing prose reads as plain standard English.
 
 ### Hard Gates
 Critical quality checks (requirements clarity, code review) are mandatory gates that cannot be bypassed. Code review runs on the local diff and must pass before any git push or PR creation.
