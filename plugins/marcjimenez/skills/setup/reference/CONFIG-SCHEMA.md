@@ -16,6 +16,8 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
 
   "code_review": { "adaptive": true, "...": "see /marcjimenez:code-review reference/REVIEW-DEPTH.md" },
 
+  "resolve_code_review": { "auto_reply_bots": true, "auto_resolve": true },
+
   "connections": {
     "context7":   { "enabled": true,  "auth": "api_key", "env_var": "CONTEXT7_API_KEY" },
     "web_search": { "enabled": true,  "auth": "none" },
@@ -38,6 +40,17 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
 section (adaptive, reviewers, thresholds, verification, waivers) is owned and documented by
 `/marcjimenez:code-review` in its `reference/REVIEW-DEPTH.md` — read that for its field detail; the candidate set
 and triage mapping live in code-review's `SKILL.md`.
+
+## `resolve_code_review`
+
+Read by `/marcjimenez:resolve-code-review`. Both default true, so the skill works with no config.
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `auto_reply_bots` | bool | post a clear rebuttal to a bot comment (Copilot, CodeRabbit) autonomously; those reviews are advisory and non-blocking (default true) |
+| `auto_resolve` | bool | resolve a thread once its comment is addressed; reversible via `unresolveReviewThread` (default true) |
+
+Rebuttals to human reviewers are always printed before posting, regardless of these knobs.
 
 ## `connections`
 

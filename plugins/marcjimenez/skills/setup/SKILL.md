@@ -57,6 +57,12 @@ drop reviewers a repo never needs), `adaptive: false` (run every reviewer on eve
 `confidence_threshold`, `max_rounds`, `adversarial_verification`. Field detail: `/marcjimenez:code-review`
 `reference/REVIEW-DEPTH.md`.
 
+`/marcjimenez:resolve-code-review` (triages a PR's existing review comments) reads a `resolve_code_review`
+section with two optional knobs, both default true: `auto_reply_bots` (post a clear rebuttal to a bot
+comment autonomously) and `auto_resolve` (resolve a thread once addressed, reversible). It works with no
+config; offer these only if the user wants to turn off autonomous bot replies or thread resolution.
+Rebuttals to human reviewers are always printed before posting regardless.
+
 ## 3. VCS / PR settings
 
 Ask: `base_branch` (default `main`), `branch_prefixes` (default `feat/fix/refactor/docs`), whether to
