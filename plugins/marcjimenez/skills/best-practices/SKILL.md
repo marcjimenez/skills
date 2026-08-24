@@ -40,25 +40,42 @@ limit findings to what the repo itself and its installed-dependency docs can sup
 ## Steps
 
 1. **Identify the surface to audit.** What are we building or changing, and what dependencies, frameworks,
-   and APIs does it lean on?
+   and APIs does it lean on? Name the TECHNOLOGIES too, not only the libraries: a schema language, an ORM,
+   a migration tool, an effect system. Those carry conventions of their own that no call site reveals.
    - review mode: parse the diff — the new/changed functions, the libraries they import, the patterns used.
    - advisory mode: the chosen approach and its dependency list.
    Write the audit list as specific items: "our React Query usage for X", "our retry logic around fetch",
    "our LangGraph node structure" — not "the whole file".
 
-2. **Gather prior art (reuse research's GitHub playbook — do NOT duplicate it).** For each item, find how
+2. **Load or write a practice brief for each technology in play.** Skip this step when
+   `practices.enabled` is false, and say in the report that no brief-derived findings were possible.
+   Otherwise read `$CONFIG_HOME/practices/<technology>.md`. If it is missing, or its `researched` date is
+   older than `practices.max_age_days` (default 90), research the technology's own guidance: its
+   documentation, its specification, and what its maintainers publish. Then write the brief. Format,
+   sourcing bar, and what deserves a brief: `reference/PRACTICE-BRIEFS.md`.
+
+   This is a different question from step 3 and finds a different class of defect. Step 3 asks how others
+   call an API; this asks what the technology considers correct use. The GraphQL case is the worked example
+   in the reference: implementation detail in SDL descriptions is invisible when comparing resolvers to
+   other repos' resolvers, and obvious the moment you read what GraphQL says about documenting a schema.
+
+   Audit the target against the brief's **Rules** and **Smells** directly. A rule the target breaks is a
+   finding, cited to the brief's source. Check **Not rules** before flagging, so a settled non-issue is not
+   raised again.
+
+3. **Gather prior art (reuse research's GitHub playbook — do NOT duplicate it).** For each item, find how
    high-signal projects do it and what the docs recommend. Mechanics live in
    `/marcjimenez:research` `reference/RESEARCH-PLAYBOOK.md` §2–4: `gh search code`/`repos`/`prs` for real,
    high-star usage pinned to a commit SHA, and official docs via Context7 (or WebFetch) for the idiomatic
    form. Prefer canonical sources: the library's own examples and docs, and repos with many stars and recent
    activity. A single stale blog post is not prior art.
 
-3. **Compare and find divergences.** For each item, contrast our approach with the prior art. A divergence
+4. **Compare and find divergences.** For each item, contrast our approach with the prior art. A divergence
    is real only when the ecosystem's way is concretely better HERE — safer, more idiomatic, less code, or it
    avoids a known pitfall — AND applies to our context. When our divergence is justified (repo convention,
    a constraint the ecosystem example lacks), say so and do NOT flag it.
 
-4. **Report.** One finding per divergence, most severe first:
+5. **Report.** One finding per divergence, most severe first:
    ```
    [SEVERITY: high|medium|low]
    <what we do> — <what well-regarded projects do> (cite: SHA-pinned URL or doc) — <why theirs is better
@@ -83,6 +100,10 @@ to the caller.
 
 ## Completion criteria
 
+- [ ] Every technology of substance has a brief that is present and within `practices.max_age_days`, and
+      the target was audited against its Rules and Smells.
+- [ ] A brief written or refreshed this run was saved to `$CONFIG_HOME/practices/`, so the next run and the
+      next repo do not re-research it.
 - [ ] Every dependency, framework, and pattern of substance in the target was audited; none silently skipped.
 - [ ] Each finding cites a real, SHA-pinned GitHub source or an official doc — no unsourced assertions.
 - [ ] Each finding names the concrete change, not "consider improving".
