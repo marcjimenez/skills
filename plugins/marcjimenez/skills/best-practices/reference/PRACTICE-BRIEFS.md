@@ -34,9 +34,10 @@ or one already covered by a fresh brief.
 
 ## Freshness
 
-Reuse a brief whose `researched` date is within 90 days. Past that, re-research and rewrite
-it, keeping the file at the same path so citations stay stable. Conventions move slowly, so
-90 days is generous; a brief that turns out wrong should be rewritten immediately whatever
+Reuse a brief whose `researched` date is within `practices.max_age_days` (default 90, see
+`/marcjimenez:setup` `reference/CONFIG-SCHEMA.md`). Past that, re-research and rewrite it,
+keeping the file at the same path so citations stay stable. Conventions move slowly, so the
+default is generous; a brief that turns out wrong should be rewritten immediately whatever
 its age, and the correction noted in `Superseded`.
 
 ## Sourcing bar

@@ -47,10 +47,12 @@ limit findings to what the repo itself and its installed-dependency docs can sup
    Write the audit list as specific items: "our React Query usage for X", "our retry logic around fetch",
    "our LangGraph node structure" — not "the whole file".
 
-2. **Load or write a practice brief for each technology in play.** Read
-   `$CONFIG_HOME/practices/<technology>.md`. If it is missing or its `researched` date is over 90 days old,
-   research the technology's own guidance — its documentation, specification, and maintainers — and write
-   the brief. Format, sourcing bar, and what deserves a brief: `reference/PRACTICE-BRIEFS.md`.
+2. **Load or write a practice brief for each technology in play.** Skip this step when
+   `practices.enabled` is false, and say in the report that no brief-derived findings were possible.
+   Otherwise read `$CONFIG_HOME/practices/<technology>.md`. If it is missing, or its `researched` date is
+   older than `practices.max_age_days` (default 90), research the technology's own guidance: its
+   documentation, its specification, and what its maintainers publish. Then write the brief. Format,
+   sourcing bar, and what deserves a brief: `reference/PRACTICE-BRIEFS.md`.
 
    This is a different question from step 3 and finds a different class of defect. Step 3 asks how others
    call an API; this asks what the technology considers correct use. The GraphQL case is the worked example
@@ -98,8 +100,8 @@ to the caller.
 
 ## Completion criteria
 
-- [ ] Every technology of substance has a brief that is present and under 90 days old, and the target was
-      audited against its Rules and Smells.
+- [ ] Every technology of substance has a brief that is present and within `practices.max_age_days`, and
+      the target was audited against its Rules and Smells.
 - [ ] A brief written or refreshed this run was saved to `$CONFIG_HOME/practices/`, so the next run and the
       next repo do not re-research it.
 - [ ] Every dependency, framework, and pattern of substance in the target was audited; none silently skipped.

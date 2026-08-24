@@ -77,8 +77,8 @@ language's conventions do not change between projects.
 
 Offer two knobs, both optional, written to a `practices` section:
 
-- `max_age_days` (default 90) — reuse a brief younger than this, re-research past it.
-- `enabled` (default true) — set false to skip the step entirely, which also skips the class of finding it
+- `max_age_days` (default 90): reuse a brief younger than this, re-research past it.
+- `enabled` (default true): set false to skip the step entirely, which also skips the class of finding it
   catches.
 
 `mkdir -p "$CONFIG_HOME/practices"` while writing, and say which briefs already exist so the user can see

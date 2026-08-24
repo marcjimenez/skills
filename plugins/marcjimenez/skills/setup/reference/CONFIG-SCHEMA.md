@@ -63,9 +63,9 @@ Governs the technology practice briefs `/marcjimenez:best-practices` caches unde
 "practices": { "enabled": true, "max_age_days": 90 }
 ```
 
-`enabled` (default `true`) — when false, the audit skips the brief step, and with it the class of finding
+`enabled` (default `true`): when false, the audit skips the brief step, and with it the class of finding
 that comes from a technology's own conventions rather than from how other repos use it.
-`max_age_days` (default `90`) — a brief whose `researched` date is older is re-researched and rewritten in
+`max_age_days` (default `90`): a brief whose `researched` date is older is re-researched and rewritten in
 place, so citations keep their paths.
 
 The directory is global, never per-repo: the same brief serves every checkout. Delete a file to force a
