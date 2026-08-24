@@ -25,7 +25,7 @@ while IFS= read -r f; do
   printf '%s\n' "$fm" | grep -q '^description:' || err "missing description: $f"
 done < <(find plugins/marcjimenez/skills -name SKILL.md)
 note "$count skills"
-[ "$count" -eq 13 ] || err "expected 13 skills, found $count"
+[ "$count" -eq 15 ] || err "expected 15 skills, found $count"
 
 echo "== /marcjimenez:<name> references resolve =="
 for name in $(grep -rho '/marcjimenez:[a-z][a-z-]*' plugins/marcjimenez | sed 's|/marcjimenez:||' | sort -u); do

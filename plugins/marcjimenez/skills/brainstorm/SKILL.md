@@ -34,26 +34,17 @@ REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/nu
 
 ## End
 
-Present the options with pros/cons/tradeoffs, state your recommendation, then ask if user wants to proceed to planning using AskUserQuestion:
+Present the options with pros/cons/tradeoffs, state your recommendation, then ask if the user wants to proceed:
 
 > Explored [N] approaches. Recommended: [APPROACH] because [REASON].
-> 
+>
 > Proceed to detailed planning of this approach?
 
-If user confirms (yes / y / go / proceed / plan / plan it / let's do it):
-  Invoke /marcjimenez:plan using the Skill tool with the chosen approach as context:
-  
-  ```
-  Skill({
-    skill: "marcjimenez:plan",
-    args: "[brief description of chosen approach]"
-  })
-  ```
+If the user confirms (yes / y / go / plan it / proceed):
+  Invoke `/marcjimenez:plan` with the chosen approach as context.
 
-If user wants a different option (option N / try option N / use approach N):
-  Ask which option they want, then proceed to planning with that one.
+If the user picks a different option (option N / use approach N):
+  Note which one, then invoke `/marcjimenez:plan` with that approach.
 
-If user declines (no / n / not yet / later / let me think):
-  Exit cleanly:
-  
-  > Approaches documented. Run `/marcjimenez:plan` when ready to proceed.
+If the user declines (no / not yet / let me think):
+  > Approaches documented. Run `/marcjimenez:plan` when ready.

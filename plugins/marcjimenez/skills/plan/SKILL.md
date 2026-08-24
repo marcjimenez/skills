@@ -1,7 +1,9 @@
 ---
 name: plan
-description: Produce a research-backed implementation plan with concrete code examples before any code is written.
-disable-model-invocation: true
+description: >-
+  Produce a research-backed implementation plan with concrete code examples before any code is written.
+  Use PROACTIVELY after a brainstorm concludes or when the user says "plan this", "let's plan", or selects
+  an approach to expand.
 ---
 
 # marcjimenez plan
@@ -41,30 +43,19 @@ The plan artifact lives under `$CONFIG_HOME` — never inside the target repo.
 
 ## End
 
-Present the plan summary (1-2 sentences of what will be built and what will be reused), then ask for implementation approval using AskUserQuestion:
+Present the plan summary (1-2 sentences of what will be built and what will be reused), then ask for approval:
 
 > Plan ready at `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/plan.md`
-> 
+>
 > [1-2 sentence summary]
-> 
+>
 > Proceed with implementation?
 
-If user confirms (yes / y / go / proceed / build / build it / let's do it / confirmed):
-  Invoke /marcjimenez:implement using the Skill tool:
-  
-  ```
-  Skill({
-    skill: "marcjimenez:implement",
-    args: ""
-  })
-  ```
-  
-  Implement will auto-detect the plan artifacts (research.md, plan.md) by slug and adopt them.
+If the user confirms (yes / y / go / proceed / build / build it / approved):
+  Invoke `/marcjimenez:implement` — it auto-detects this plan's artifacts (research.md, plan.md) by slug.
 
-If user declines (no / n / not yet / later / skip):
-  Exit cleanly:
-  
-  > Plan saved. Run `/marcjimenez:implement` when you're ready to build.
+If the user wants to review first (show / review / details):
+  Display the full plan.md contents, then re-ask.
 
-If user wants to review first (show / review / details / show me the plan):
-  Display the full plan.md contents, then re-ask the approval question.
+If the user declines (no / not yet / later):
+  > Plan saved. Run `/marcjimenez:implement` when ready.
