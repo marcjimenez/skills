@@ -39,6 +39,23 @@ section (adaptive, reviewers, thresholds, verification, waivers) is owned and do
 `/marcjimenez:code-review` in its `reference/REVIEW-DEPTH.md` — read that for its field detail; the candidate set
 and triage mapping live in code-review's `SKILL.md`.
 
+## `practices`
+
+Governs the technology practice briefs `/marcjimenez:best-practices` caches under
+`$CONFIG_HOME/practices/<technology>.md`. Both fields optional:
+
+```json
+"practices": { "enabled": true, "max_age_days": 90 }
+```
+
+`enabled` (default `true`) — when false, the audit skips the brief step, and with it the class of finding
+that comes from a technology's own conventions rather than from how other repos use it.
+`max_age_days` (default `90`) — a brief whose `researched` date is older is re-researched and rewritten in
+place, so citations keep their paths.
+
+The directory is global, never per-repo: the same brief serves every checkout. Delete a file to force a
+re-research before its age is up.
+
 ## `connections`
 
 Which external tools the research pipeline (`/marcjimenez:research`) may use. Each entry:
