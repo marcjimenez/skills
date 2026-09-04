@@ -14,11 +14,31 @@ Closes KUD-
 
 ## Task queue
 
-<!-- [ ] queued  [~] in progress  [x] done  [!] blocked  [-] dropped
-     An item is [x] only when the code is on the branch AND the Evidence line is written. -->
+<!-- SPINE: keep these at the top level of the list so GitHub counts them and
+     shows "n of m tasks" wherever this PR is referenced. Do not indent them,
+     do not move them inside a <details> block.
+     A box is [x] only when the code is on the branch AND the drawer's
+     Evidence line is written. The tag carries what a checkbox can't:
+     ⏳ in progress · 🚧 blocked (name the ticket) · ~strikethrough~ dropped. -->
+
+- [ ] 1. Task name — @owner
+- [ ] 2. Task name — @owner ⏳
+- [ ] 3. Task name — @owner 🚧 KUD-
+
+<!-- DRAWERS: prose only, no checkboxes. Blank line after </summary> or the
+     markdown inside will not render. Mark the in-flight one <details open>. -->
 
 <details>
-<summary><strong>[ ] 1. Task name</strong> — @owner</summary>
+<summary><strong>1. Task name</strong> — done</summary>
+
+- **Exit criteria:**
+- **Evidence:**
+- **Files:**
+
+</details>
+
+<details open>
+<summary><strong>2. Task name</strong> — in progress</summary>
 
 - **Exit criteria:**
 - **Evidence:**
@@ -27,13 +47,31 @@ Closes KUD-
 </details>
 
 <details>
-<summary><strong>[ ] 2. Task name</strong> — @owner</summary>
+<summary><strong>3. Task name</strong> — blocked</summary>
 
 - **Exit criteria:**
-- **Evidence:**
+- **Blocked by:** <!-- ticket, person, expected date, and whether it blocks merge -->
 - **Files:**
 
 </details>
+
+## Original plan
+
+<!-- Write this ONCE at draft time, as a copy of the queue above, then never
+     edit it. The live queue drifts as the work teaches you things; this
+     doesn't. The difference between the two is the scope report. -->
+
+<details>
+<summary>The queue as written on YYYY-MM-DD, before any code — frozen</summary>
+
+1. Task name
+2. Task name
+3. Task name
+
+</details>
+
+- **Added since:**
+- **Dropped since:**
 
 ## Verification
 

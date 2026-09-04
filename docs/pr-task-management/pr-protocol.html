@@ -397,7 +397,7 @@
     font-weight: 600;
   }
   .mock-body h4:first-child { margin-top: 0; }
-  .mock-body p { font-size: 15.5px; color: var(--ink-soft); }
+  .mock-body p { font-size: 15.5px; color: var(--ink-soft); max-width: 80ch; }
   .mock-body p + p { margin-top: 10px; }
 
   .progress-line {
@@ -522,6 +522,116 @@
     color: var(--ink-mute);
     margin-top: 14px;
   }
+
+  /* ---------- spine (the real task list) ---------- */
+
+  .spine-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .tracker {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    padding: 2px 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .tracker.full { background: var(--done-soft); border-color: var(--done); color: var(--done); }
+  .tracker-note { font-family: var(--mono); font-size: 11px; color: var(--ink-mute); }
+
+  ul.spine { list-style: none; margin: 0 0 8px; padding: 0; }
+  ul.spine li {
+    display: flex;
+    gap: 11px;
+    align-items: baseline;
+    padding: 6px 0;
+    font-family: var(--display);
+    font-size: 15.5px;
+    border-bottom: 1px solid transparent;
+  }
+  ul.spine li + li { border-top: 1px solid var(--rule); }
+  .cb {
+    flex: none;
+    width: 16px; height: 16px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 3px;
+    background: var(--surface);
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    padding: 0;
+    color: transparent;
+    font-size: 11px;
+    line-height: 14px;
+    font-family: var(--mono);
+  }
+  .cb:hover { border-color: var(--accent); }
+  li[data-state="done"] .cb {
+    background: var(--done);
+    border-color: var(--done);
+    color: #fff;
+  }
+  .spine .sn {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+  }
+  .spine .stitle { flex: 1; min-width: 0; }
+  li[data-state="done"] .stitle { color: var(--ink-mute); text-decoration: line-through; text-decoration-color: var(--rule-strong); }
+  .spine .sowner { font-family: var(--mono); font-size: 11.5px; color: var(--ink-mute); white-space: nowrap; }
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .tag[data-tag="queued"]  { background: var(--na-soft); color: var(--na); border-color: var(--rule); }
+  .tag[data-tag="active"]  { background: var(--active-soft); color: var(--active); border-color: var(--active); }
+  .tag[data-tag="blocked"] { background: var(--blocked-soft); color: var(--blocked); border-color: var(--blocked); }
+  .tag[data-tag="done"]    { background: var(--done-soft); color: var(--done); border-color: var(--done); }
+  @media (max-width: 620px) {
+    .spine .sowner { display: none; }
+  }
+
+  .pill {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 1px 7px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .pill[data-tag="queued"]  { background: var(--na-soft); color: var(--na); }
+  .pill[data-tag="active"]  { background: var(--active-soft); color: var(--active); }
+  .pill[data-tag="blocked"] { background: var(--blocked-soft); color: var(--blocked); }
+  .pill[data-tag="done"]    { background: var(--done-soft); color: var(--done); }
+
+  /* frozen block */
+  .frozen { border-style: dashed; }
+  .frozen > summary .title { color: var(--ink-mute); font-style: italic; }
+  .frozen-body {
+    padding: 4px 16px 18px;
+    border-top: 1px dashed var(--rule);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.8;
+    color: var(--ink-mute);
+  }
+  .frozen-body .drift { color: var(--active); }
+  .frozen-body .kept { color: var(--ink-soft); }
 
   /* ---------- risk calculator ---------- */
 
@@ -767,7 +877,7 @@
       <div class="stage is-open">
         <div class="stage-n">STAGE 2</div>
         <h3>Write the queue</h3>
-        <p>Decompose into tasks with owners and exit criteria. Everything starts unchecked. Mark conditional sections required or not-applicable now, with a reason.</p>
+        <p>Decompose into tasks with owners and exit criteria. Everything starts unchecked. Copy the list once into the frozen <b>Original plan</b> block, then mark conditional sections required or not-applicable, with a reason.</p>
         <span class="state">draft</span>
       </div>
       <div class="stage is-open">
@@ -815,7 +925,12 @@
           </tr>
           <tr>
             <td><b>Task queue</b></td>
-            <td>The plan as checkboxes. Each item collapses to owner, exit criteria, evidence, and files touched.</td>
+            <td>A flat task list as the spine — GitHub counts it — with a collapsed drawer per item carrying owner, exit criteria, evidence and files.</td>
+            <td><span class="req always">always</span></td>
+          </tr>
+          <tr>
+            <td><b>Original plan</b></td>
+            <td>The queue as first written, frozen at draft time and never edited. The live queue drifts; this doesn't. The difference between them <em>is</em> the scope report.</td>
             <td><span class="req always">always</span></td>
           </tr>
           <tr>
@@ -859,15 +974,16 @@
       <span class="num">04</span>
       <h2>The task queue, live</h2>
     </div>
-    <p class="lede">Each item is a collapsed <code>&lt;details&gt;</code> block. Collapsed, the queue reads as a status board in ten seconds. Expanded, an item carries everything a reviewer would otherwise have to ask for. Click a box to cycle its state; click a row to expand it.</p>
+    <p class="lede">Two structures, not one. The <b>spine</b> is a flat, top-level markdown task list — real checkboxes, so GitHub counts them and surfaces <span class="mono-tag">5 of 8 tasks</span> in the PR list, the sidebar, and every issue that links this PR. The <b>drawers</b> below carry the prose, keyed by the same number. Collapsing the state into a drawer would forfeit that free tracker; nesting real checkboxes inside a <code>&lt;details&gt;</code> makes clicking one snap the section shut.</p>
 
     <div class="states" role="list">
       <span class="chip s-queued" role="listitem"><span class="box">[ ]</span> queued — written, not started</span>
-      <span class="chip s-active" role="listitem"><span class="box">[~]</span> in progress — one at a time, ideally</span>
-      <span class="chip s-done" role="listitem"><span class="box">[x]</span> done — code merged to branch <em>and</em> evidence written</span>
-      <span class="chip s-blocked" role="listitem"><span class="box">[!]</span> blocked — reason and unblocker named inside</span>
-      <span class="chip s-na" role="listitem"><span class="box">[-]</span> dropped — with a reason or a linked follow-up</span>
+      <span class="chip s-active" role="listitem"><span class="box">[ ] ⏳</span> in progress — one at a time, ideally</span>
+      <span class="chip s-done" role="listitem"><span class="box">[x]</span> done — code on the branch <em>and</em> evidence written</span>
+      <span class="chip s-blocked" role="listitem"><span class="box">[ ] 🚧</span> blocked — reason and unblocker named in the drawer</span>
+      <span class="chip s-na" role="listitem"><span class="box">~struck~</span> dropped — with a reason or a linked follow-up</span>
     </div>
+    <p class="hint">A checkbox has two states and the work has five, so the tag after the title carries what the box can't. The box stays the single source of done.</p>
 
     <div class="mock">
       <div class="mock-bar">
@@ -882,17 +998,28 @@
         <h4>How</h4>
         <p>Caps live in a new <code>issuer_offer_cap</code> table keyed by <code>(issuer, category, period)</code>, loaded once per optimizer run and applied as a filter in the scoring pass rather than as a post-hoc adjustment — a capped card should never enter the ranking, not be removed from it. Rejected: computing caps inside the GraphQL resolver (would have added a per-card query, N+1 on a hot path), and storing remaining balance per user (correct but needs a nightly reconciliation job we don't have yet).</p>
 
-        <h4>Task queue <span id="q-count" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);letter-spacing:0"></span></h4>
-        <div class="progress-line">
-          <span id="q-label">5 of 8 done</span>
-          <span class="meter"><span id="q-meter" style="width:62%"></span></span>
-          <span id="q-flags">1 blocked</span>
+        <h4>Task queue</h4>
+        <div class="spine-head">
+          <span class="tracker" id="tracker">5 of 8 tasks</span>
+          <span class="tracker-note">↑ GitHub renders this counter itself, from the list below</span>
         </div>
+
+        <ul class="spine" id="spine">
+          <li data-task="1" data-state="done"><button class="cb" type="button" aria-label="toggle task 1">✓</button><span class="sn">1.</span><span class="stitle">Schema + migration for <code>issuer_offer_cap</code></span><button class="tag" type="button" data-tag="queued" hidden>⋯ status</button><span class="sowner">@marcjimenez</span></li>
+          <li data-task="2" data-state="done"><button class="cb" type="button" aria-label="toggle task 2">✓</button><span class="sn">2.</span><span class="stitle">Seed caps for the top 12 issuers</span><button class="tag" type="button" data-tag="queued" hidden>⋯ status</button><span class="sowner">@marcjimenez</span></li>
+          <li data-task="3" data-state="done"><button class="cb" type="button" aria-label="toggle task 3">✓</button><span class="sn">3.</span><span class="stitle">Apply cap filter in the scoring pass</span><button class="tag" type="button" data-tag="queued" hidden>⋯ status</button><span class="sowner">@marcjimenez</span></li>
+          <li data-task="4" data-state="done"><button class="cb" type="button" aria-label="toggle task 4">✓</button><span class="sn">4.</span><span class="stitle">Expose <code>capReached</code> on the <code>Recommendation</code> type</span><button class="tag" type="button" data-tag="queued" hidden>⋯ status</button><span class="sowner">@dpatel</span></li>
+          <li data-task="5" data-state="done"><button class="cb" type="button" aria-label="toggle task 5">✓</button><span class="sn">5.</span><span class="stitle">Unit + integration coverage for cap boundaries</span><button class="tag" type="button" data-tag="queued" hidden>⋯ status</button><span class="sowner">@marcjimenez</span></li>
+          <li data-task="6" data-state="active"><button class="cb" type="button" aria-label="toggle task 6">✓</button><span class="sn">6.</span><span class="stitle">Backfill job for historical recommendations</span><button class="tag" type="button" data-tag="active" data-custom="1">⏳ in progress</button><span class="sowner">@marcjimenez</span></li>
+          <li data-task="7" data-state="blocked"><button class="cb" type="button" aria-label="toggle task 7">✓</button><span class="sn">7.</span><span class="stitle">Cap-reached copy in the recommendation card</span><button class="tag" type="button" data-tag="blocked" data-custom="1">🚧 KUD-2231</button><span class="sowner">@rlin</span></li>
+          <li data-task="8" data-state="queued"><button class="cb" type="button" aria-label="toggle task 8">✓</button><span class="sn">8.</span><span class="stitle">Dashboard panel + alert on cap-filter rate</span><button class="tag" type="button" data-tag="queued">⋯ status</button><span class="sowner">@marcjimenez</span></li>
+        </ul>
+        <p class="hint" style="margin-bottom:22px">Click a box to check it, or a tag to cycle queued → in progress → blocked. The counter updates the way GitHub's does.</p>
 
         <div id="queue-list">
 
-          <details class="task" data-state="done">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Schema + migration for <code>issuer_offer_cap</code></span><span class="owner">@marcjimenez</span></summary>
+          <details class="task" data-task="1">
+            <summary><span class="caret">▸</span><span class="title">1. Schema + migration for <code>issuer_offer_cap</code></span><span class="pill" data-tag="done">done</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd>Table exists in staging, migration reverses cleanly, no lock over 50ms on an empty table.</dd>
@@ -902,8 +1029,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="done">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Seed caps for the top 12 issuers</span><span class="owner">@marcjimenez</span></summary>
+          <details class="task" data-task="2">
+            <summary><span class="caret">▸</span><span class="title">2. Seed caps for the top 12 issuers</span><span class="pill" data-tag="done">done</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd>Seed data reviewed against each issuer's published terms; source URL recorded per row.</dd>
@@ -913,8 +1040,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="done">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Apply cap filter in the scoring pass</span><span class="owner">@marcjimenez</span></summary>
+          <details class="task" data-task="3">
+            <summary><span class="caret">▸</span><span class="title">3. Apply cap filter in the scoring pass</span><span class="pill" data-tag="done">done</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd>A capped card is excluded before ranking; uncapped behavior byte-identical to main on the golden fixture set.</dd>
@@ -924,8 +1051,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="done">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Expose <code>capReached</code> on the <code>Recommendation</code> type</span><span class="owner">@dpatel</span></summary>
+          <details class="task" data-task="4">
+            <summary><span class="caret">▸</span><span class="title">4. Expose <code>capReached</code> on the <code>Recommendation</code> type</span><span class="pill" data-tag="done">done</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd>Nullable boolean, resolved from data already in the loader — no new round trip.</dd>
@@ -935,8 +1062,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="done">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Unit + integration coverage for cap boundaries</span><span class="owner">@marcjimenez</span></summary>
+          <details class="task" data-task="5">
+            <summary><span class="caret">▸</span><span class="title">5. Unit + integration coverage for cap boundaries</span><span class="pill" data-tag="done">done</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd>Cases at cap−1, exactly at cap, cap+1, and cap reset at period boundary.</dd>
@@ -946,8 +1073,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="active" open>
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[~]</span><span class="caret">▸</span><span class="title">Backfill job for historical recommendations</span><span class="owner">@marcjimenez</span></summary>
+          <details class="task" data-task="6" open>
+            <summary><span class="caret">▸</span><span class="title">6. Backfill job for historical recommendations</span><span class="pill" data-tag="active">in progress</span></summary>
             <div class="task-detail">
               <p>Rewrites cached recommendations older than the cap rollout so the app doesn't show stale uncapped advice for up to 24h.</p>
               <dl>
@@ -958,8 +1085,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="blocked">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[!]</span><span class="caret">▸</span><span class="title">Cap-reached copy in the recommendation card</span><span class="owner">@rlin</span></summary>
+          <details class="task" data-task="7">
+            <summary><span class="caret">▸</span><span class="title">7. Cap-reached copy in the recommendation card</span><span class="pill" data-tag="blocked">blocked</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd>Copy approved by compliance; string lands in the i18n bundle, not inline.</dd>
@@ -969,8 +1096,8 @@
             </div>
           </details>
 
-          <details class="task" data-state="queued">
-            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[ ]</span><span class="caret">▸</span><span class="title">Dashboard panel + alert on cap-filter rate</span><span class="owner">@marcjimenez</span></summary>
+          <details class="task" data-task="8">
+            <summary><span class="caret">▸</span><span class="title">8. Dashboard panel + alert on cap-filter rate</span><span class="pill" data-tag="queued">queued</span></summary>
             <div class="task-detail">
               <dl>
                 <dt>Exit</dt><dd><code>optimizer.cards_capped_total</code> emitted per issuer; panel added; alert fires if the rate jumps above 40% of recommendations in an hour, which would mean bad seed data.</dd>
@@ -981,7 +1108,23 @@
           </details>
 
         </div>
-        <p class="hint">Reviewer contract: an item is only <span class="mono-tag">[x]</span> when the code is on the branch <em>and</em> the evidence line inside it is written. "Done, will add tests" is not done — it's <span class="mono-tag">[~]</span>.</p>
+        <p class="hint">Reviewer contract: a box is checked only when the code is on the branch <em>and</em> the evidence line in its drawer is written. "Done, will add tests" is not done — it's <span class="mono-tag">⏳</span>.</p>
+
+        <h4>Original plan</h4>
+        <details class="task frozen">
+          <summary><span class="caret">▸</span><span class="title">The queue as written on 1 Sep, before any code — frozen, never edited</span><span class="pill" data-tag="queued">6 items</span></summary>
+          <div class="frozen-body">
+            <div class="kept">1. Schema + migration for <code>issuer_offer_cap</code></div>
+            <div class="kept">2. Seed caps for the top 12 issuers</div>
+            <div class="kept">3. Apply cap filter in the scoring pass</div>
+            <div class="kept">4. Expose <code>capReached</code> on the <code>Recommendation</code> type</div>
+            <div class="kept">5. Unit + integration coverage for cap boundaries</div>
+            <div class="kept">6. Cap-reached copy in the recommendation card</div>
+            <div class="drift" style="margin-top:12px">→ added since: 6. backfill job (stale cached recs), 8. dashboard + alert</div>
+            <div class="drift">→ dropped since: none</div>
+          </div>
+        </details>
+        <p class="hint">Written once at stage 2 and never touched again. The live queue drifts as the work teaches you things; this block doesn't. A reviewer reads both and sees the scope change without clicking through edit history — which is the whole argument for drafting first, made visible.</p>
       </div>
     </div>
   </section>
@@ -1024,9 +1167,39 @@
     </div>
   </section>
 
-  <section id="enforce">
+  <section id="mechanics">
     <div class="sec-head">
       <span class="num">06</span>
+      <h2>Mechanics &amp; limits</h2>
+    </div>
+    <p class="lede">GitHub caps a PR body at <b>65,536 characters</b> — the same ceiling as any issue or comment, enforced on the API write, so a bot or a <code>gh pr edit</code> hits it too. A fully-filled drawer here runs about 350 characters; the entire example PR above, every section complete, is roughly 7,000. You would need around sixty detailed tasks to reach the wall, and a PR with sixty tasks has a decomposition problem, not a formatting problem. Treat the limit as a guardrail — fail CI at 55k with "split this PR" — not a budget to manage. The binding constraint is reader attention, which is what the drawers are for.</p>
+    <div class="rules">
+      <div class="rule-row">
+        <div class="rname">blank line after &lt;/summary&gt;</div>
+        <p>Without it the markdown inside the drawer renders as raw text. The single most common way one of these bodies looks broken.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">no real checkboxes in drawers</div>
+        <p>A <code>- [ ]</code> inside a <code>&lt;details&gt;</code> snaps the section shut when clicked, and doesn't reliably feed the counter. Boxes live in the spine; drawers hold prose only.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">&lt;details open&gt;</div>
+        <p>On the item in progress, and nothing else. It's the one thing a reviewer should land on already unfolded.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">escape &amp;amp; in summaries</div>
+        <p>A bare <code>&amp;</code> in summary text breaks the render — "Data &amp; migrations" needs the entity. Keep nesting to two levels while you're at it.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">never collapse Why or How</div>
+        <p>Those are the two sections a reviewer must read before the diff. Collapsing them is how a PR gets rubber-stamped. Progressive disclosure applies to evidence, not intent.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="enforce">
+    <div class="sec-head">
+      <span class="num">07</span>
       <h2>Making it stick</h2>
     </div>
     <p class="lede">A template without a check is a suggestion. Four rules, all mechanical, all cheap — every one of them can fail a status check rather than a human's patience.</p>
@@ -1047,13 +1220,21 @@
         <div class="rname">body-drift</div>
         <p>Warns (never blocks) when commits land after the last body edit — the signal that the record and the branch have drifted apart.</p>
       </div>
+      <div class="rule-row">
+        <div class="rname">plan-frozen</div>
+        <p>Snapshots the <b>Original plan</b> block on the first push and fails if it changes afterward. Also reports the delta against the live spine, so scope drift lands in the checks tab instead of a reviewer's memory.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">body-size</div>
+        <p>Warns past 55,000 characters, well under GitHub's 65,536 ceiling, so a body never fails to save mid-edit.</p>
+      </div>
     </div>
     <p class="hint">Every checkbox in the template is verifiable in under thirty seconds. "Code follows best practices" is not a checkbox; "existing tests pass locally" is.</p>
   </section>
 
   <section id="template">
     <div class="sec-head">
-      <span class="num">07</span>
+      <span class="num">08</span>
       <h2>The template</h2>
     </div>
     <p class="lede">Drop at <code>.github/pull_request_template.md</code>. HTML comments carry the instructions and vanish on render, so a filled-in body reads clean.</p>
@@ -1078,11 +1259,31 @@ Closes KUD-
 
 ## Task queue
 
-&lt;!-- [ ] queued  [~] in progress  [x] done  [!] blocked  [-] dropped
-     An item is [x] only when the code is on the branch AND the Evidence line is written. --&gt;
+&lt;!-- SPINE: keep these at the top level of the list so GitHub counts them and
+     shows "n of m tasks" wherever this PR is referenced. Do not indent them,
+     do not move them inside a &lt;details&gt; block.
+     A box is [x] only when the code is on the branch AND the drawer's
+     Evidence line is written. The tag carries what a checkbox can't:
+     ⏳ in progress · 🚧 blocked (name the ticket) · ~strikethrough~ dropped. --&gt;
+
+- [ ] 1. Task name — @owner
+- [ ] 2. Task name — @owner ⏳
+- [ ] 3. Task name — @owner 🚧 KUD-
+
+&lt;!-- DRAWERS: prose only, no checkboxes. Blank line after &lt;/summary&gt; or the
+     markdown inside will not render. Mark the in-flight one &lt;details open&gt;. --&gt;
 
 &lt;details&gt;
-&lt;summary&gt;&lt;strong&gt;[ ] 1. Task name&lt;/strong&gt; — @owner&lt;/summary&gt;
+&lt;summary&gt;&lt;strong&gt;1. Task name&lt;/strong&gt; — done&lt;/summary&gt;
+
+- **Exit criteria:**
+- **Evidence:**
+- **Files:**
+
+&lt;/details&gt;
+
+&lt;details open&gt;
+&lt;summary&gt;&lt;strong&gt;2. Task name&lt;/strong&gt; — in progress&lt;/summary&gt;
 
 - **Exit criteria:**
 - **Evidence:**
@@ -1091,13 +1292,31 @@ Closes KUD-
 &lt;/details&gt;
 
 &lt;details&gt;
-&lt;summary&gt;&lt;strong&gt;[ ] 2. Task name&lt;/strong&gt; — @owner&lt;/summary&gt;
+&lt;summary&gt;&lt;strong&gt;3. Task name&lt;/strong&gt; — blocked&lt;/summary&gt;
 
 - **Exit criteria:**
-- **Evidence:**
+- **Blocked by:** &lt;!-- ticket, person, expected date, and whether it blocks merge --&gt;
 - **Files:**
 
 &lt;/details&gt;
+
+## Original plan
+
+&lt;!-- Write this ONCE at draft time, as a copy of the queue above, then never
+     edit it. The live queue drifts as the work teaches you things; this
+     doesn't. The difference between the two is the scope report. --&gt;
+
+&lt;details&gt;
+&lt;summary&gt;The queue as written on YYYY-MM-DD, before any code — frozen&lt;/summary&gt;
+
+1. Task name
+2. Task name
+3. Task name
+
+&lt;/details&gt;
+
+- **Added since:**
+- **Dropped since:**
 
 ## Verification
 
@@ -1190,50 +1409,72 @@ RISK: n/24 (band) — radius n, data n, revert n, sensitivity n, verification n
 (function () {
   "use strict";
 
-  /* ---------- task state cycling ---------- */
+  /* ---------- spine: checkbox drives state, tag carries the rest ---------- */
 
-  var ORDER = ["queued", "active", "done", "blocked", "na"];
-  var GLYPH = { queued: "[ ]", active: "[~]", done: "[x]", blocked: "[!]", na: "[-]" };
+  var LABEL = { queued: "queued", active: "in progress", blocked: "blocked", done: "done" };
+  var TAGTEXT = { queued: "⋯ status", active: "⏳ in progress", blocked: "🚧 blocked" };
+  var TAGCYCLE = ["queued", "active", "blocked"];
 
-  function refreshCounts() {
-    var tasks = Array.prototype.slice.call(document.querySelectorAll("#queue-list .task"));
-    var done = tasks.filter(function (t) { return t.dataset.state === "done"; }).length;
-    var blocked = tasks.filter(function (t) { return t.dataset.state === "blocked"; }).length;
-    var dropped = tasks.filter(function (t) { return t.dataset.state === "na"; }).length;
-    var total = tasks.length;
-    document.getElementById("q-label").textContent = done + " of " + total + " done";
-    document.getElementById("q-meter").style.width = (total ? Math.round((done / total) * 100) : 0) + "%";
-    var flags = [];
-    if (blocked) { flags.push(blocked + " blocked"); }
-    if (dropped) { flags.push(dropped + " dropped"); }
-    document.getElementById("q-flags").textContent = flags.join(" · ");
-    document.getElementById("q-count").textContent = done === total ? "· queue closed" : "· open";
+  function drawerFor(n) {
+    return document.querySelector('#queue-list .task[data-task="' + n + '"]');
   }
 
-  function cycle(task) {
-    var i = ORDER.indexOf(task.dataset.state);
-    var next = ORDER[(i + 1) % ORDER.length];
-    task.dataset.state = next;
-    task.querySelector(".tbox").textContent = GLYPH[next];
-    refreshCounts();
-  }
-
-  document.querySelectorAll("#queue-list .tbox").forEach(function (box) {
-    box.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      cycle(box.closest(".task"));
-    });
-    box.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        e.stopPropagation();
-        cycle(box.closest(".task"));
+  function syncItem(li) {
+    var state = li.dataset.state;
+    var drawer = drawerFor(li.dataset.task);
+    if (drawer) {
+      var pill = drawer.querySelector(".pill");
+      pill.dataset.tag = state;
+      pill.textContent = LABEL[state];
+    }
+    var tag = li.querySelector(".tag");
+    if (tag) {
+      if (state === "done") {
+        tag.hidden = true;
+      } else {
+        tag.hidden = false;
+        tag.dataset.tag = state;
+        /* keep a hand-written tag (e.g. a ticket number) rather than overwriting it */
+        if (!tag.dataset.custom) { tag.textContent = TAGTEXT[state]; }
       }
+    }
+  }
+
+  function refreshTracker() {
+    var items = Array.prototype.slice.call(document.querySelectorAll("#spine li"));
+    var done = items.filter(function (li) { return li.dataset.state === "done"; }).length;
+    var el = document.getElementById("tracker");
+    el.textContent = done + " of " + items.length + " tasks";
+    el.classList.toggle("full", done === items.length);
+  }
+
+  document.querySelectorAll("#spine li").forEach(function (li) {
+    var tag = li.querySelector(".tag");
+
+    li.querySelector(".cb").addEventListener("click", function () {
+      if (li.dataset.state === "done") {
+        li.dataset.state = li.dataset.prev || "queued";
+      } else {
+        li.dataset.prev = li.dataset.state;
+        li.dataset.state = "done";
+      }
+      syncItem(li);
+      refreshTracker();
     });
+
+    if (tag) {
+      tag.addEventListener("click", function () {
+        if (li.dataset.state === "done") { return; }
+        var next = TAGCYCLE[(TAGCYCLE.indexOf(li.dataset.state) + 1) % TAGCYCLE.length];
+        li.dataset.state = next;
+        delete tag.dataset.custom;
+        syncItem(li);
+        refreshTracker();
+      });
+    }
   });
 
-  refreshCounts();
+  refreshTracker();
 
   /* ---------- risk score ---------- */
 
