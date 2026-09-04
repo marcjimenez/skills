@@ -1,0 +1,1388 @@
+<title>The PR Is The Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --ground: #f4f6f7;
+    --surface: #ffffff;
+    --surface-sunk: #eceff1;
+    --ink: #101d25;
+    --ink-soft: #40525d;
+    --ink-mute: #6a7c87;
+    --rule: #d8e0e4;
+    --rule-strong: #b9c6cc;
+    --accent: #0f6d8c;
+    --accent-soft: #e2eff4;
+    --done: #2c7a4b;
+    --done-soft: #e2f0e7;
+    --active: #a8681a;
+    --active-soft: #f7eddc;
+    --blocked: #a63a3a;
+    --blocked-soft: #f6e4e4;
+    --na: #75858f;
+    --na-soft: #e9edef;
+    --shadow: 0 1px 2px rgba(16, 29, 37, .06), 0 8px 24px -16px rgba(16, 29, 37, .25);
+
+    --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --measure: 68ch;
+    --pad: clamp(20px, 4vw, 56px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0e181e;
+      --surface: #152229;
+      --surface-sunk: #101b21;
+      --ink: #e7eef1;
+      --ink-soft: #b3c3cb;
+      --ink-mute: #8698a2;
+      --rule: #27383f;
+      --rule-strong: #3a4f58;
+      --accent: #58b6d3;
+      --accent-soft: #16323d;
+      --done: #6cc08c;
+      --done-soft: #142d20;
+      --active: #dda85f;
+      --active-soft: #33260f;
+      --blocked: #e08585;
+      --blocked-soft: #331a1a;
+      --na: #8c9aa3;
+      --na-soft: #1c2a31;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -18px rgba(0, 0, 0, .8);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0e181e;
+    --surface: #152229;
+    --surface-sunk: #101b21;
+    --ink: #e7eef1;
+    --ink-soft: #b3c3cb;
+    --ink-mute: #8698a2;
+    --rule: #27383f;
+    --rule-strong: #3a4f58;
+    --accent: #58b6d3;
+    --accent-soft: #16323d;
+    --done: #6cc08c;
+    --done-soft: #142d20;
+    --active: #dda85f;
+    --active-soft: #33260f;
+    --blocked: #e08585;
+    --blocked-soft: #331a1a;
+    --na: #8c9aa3;
+    --na-soft: #1c2a31;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 10px 28px -18px rgba(0, 0, 0, .8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 var(--pad) 96px;
+  }
+
+  h1, h2, h3, h4, .ui { font-family: var(--display); }
+
+  h2 {
+    font-size: clamp(24px, 3vw, 31px);
+    line-height: 1.15;
+    letter-spacing: -.015em;
+    font-weight: 600;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -.005em;
+    margin: 0;
+  }
+
+  p { margin: 0; max-width: var(--measure); }
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  .eyebrow {
+    font-family: var(--display);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+  }
+
+  /* ---------- masthead ---------- */
+
+  header.masthead {
+    padding: clamp(56px, 9vw, 104px) 0 40px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    align-items: baseline;
+    margin-bottom: 26px;
+  }
+
+  .kicker .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1 {
+    font-size: clamp(40px, 8.5vw, 82px);
+    line-height: .96;
+    letter-spacing: -.035em;
+    font-weight: 700;
+    margin: 0 0 22px;
+    max-width: 15ch;
+    text-wrap: balance;
+  }
+
+  h1 em {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: -.01em;
+  }
+
+  .deck {
+    font-size: clamp(18px, 2.2vw, 21px);
+    color: var(--ink-soft);
+    max-width: 60ch;
+  }
+
+  .masthead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin-top: 32px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-mute);
+  }
+  .masthead-meta b { color: var(--ink-soft); font-weight: 500; }
+
+  /* ---------- sections ---------- */
+
+  section { padding-top: clamp(56px, 7vw, 88px); }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 12px;
+  }
+  .sec-head .num {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+    padding-top: 4px;
+  }
+  .lede { margin-top: 14px; color: var(--ink-soft); }
+
+  /* ---------- premise list ---------- */
+
+  .premise { display: grid; gap: 0; margin-top: 8px; }
+  .premise div {
+    display: grid;
+    grid-template-columns: minmax(0, 15ch) minmax(0, 1fr);
+    gap: 6px 32px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule);
+    align-items: baseline;
+  }
+  .premise dt {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: .02em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .premise dd { margin: 0; color: var(--ink-soft); font-size: 16px; }
+  @media (max-width: 640px) {
+    .premise div { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- lifecycle rail ---------- */
+
+  .rail {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    margin-top: 28px;
+    counter-reset: stage;
+  }
+  .stage {
+    padding: 0 20px 4px 0;
+    position: relative;
+  }
+  .stage::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background: var(--rule-strong);
+    margin-bottom: 16px;
+  }
+  .stage:nth-child(-n+3)::before { background: var(--accent); }
+  .stage-n {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    letter-spacing: .08em;
+  }
+  .stage h3 { margin: 6px 0 8px; font-size: 16px; }
+  .stage p { font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+  .stage .state {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    color: var(--ink-mute);
+  }
+  .stage.is-open .state { color: var(--accent); border-color: var(--accent); }
+  @media (max-width: 900px) {
+    .rail { grid-template-columns: 1fr 1fr; }
+    .stage { padding-bottom: 20px; }
+  }
+  @media (max-width: 560px) { .rail { grid-template-columns: 1fr; } }
+
+  /* ---------- generic surface ---------- */
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ---------- anatomy table ---------- */
+
+  .anatomy { margin-top: 24px; overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+    min-width: 620px;
+  }
+  th {
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: left;
+    font-weight: 600;
+    padding: 0 16px 10px 0;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  td {
+    padding: 14px 16px 14px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    color: var(--ink-soft);
+  }
+  td:first-child { color: var(--ink); }
+  td code, .mono-tag {
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .req {
+    font-family: var(--mono);
+    font-size: 11px;
+    white-space: nowrap;
+    padding: 2px 7px;
+    border-radius: 3px;
+  }
+  .req.always { background: var(--accent-soft); color: var(--accent); }
+  .req.cond { background: var(--na-soft); color: var(--na); }
+
+  /* ---------- state legend ---------- */
+
+  .states {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .chip {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    padding: 5px 11px;
+    border-radius: 4px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    border: 1px solid transparent;
+  }
+  .chip .box { font-weight: 600; }
+  .chip.s-queued  { background: var(--na-soft); color: var(--na); border-color: var(--rule); }
+  .chip.s-active  { background: var(--active-soft); color: var(--active); }
+  .chip.s-done    { background: var(--done-soft); color: var(--done); }
+  .chip.s-blocked { background: var(--blocked-soft); color: var(--blocked); }
+  .chip.s-na      { background: var(--na-soft); color: var(--na); }
+
+  /* ---------- PR body mockup ---------- */
+
+  .mock {
+    margin-top: 28px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .mock-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 18px;
+    background: var(--surface-sunk);
+    border-bottom: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-mute);
+  }
+  .badge-draft {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    background: var(--na-soft);
+    color: var(--na);
+    border: 1px solid var(--rule-strong);
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .mock-body { padding: clamp(18px, 3vw, 30px); }
+  .mock-body h4 {
+    font-size: 12px;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 30px 0 10px;
+    font-weight: 600;
+  }
+  .mock-body h4:first-child { margin-top: 0; }
+  .mock-body p { font-size: 15.5px; color: var(--ink-soft); }
+  .mock-body p + p { margin-top: 10px; }
+
+  .progress-line {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--ink-mute);
+    margin-bottom: 14px;
+  }
+  .meter {
+    flex: 1;
+    height: 6px;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    overflow: hidden;
+    min-width: 80px;
+  }
+  .meter span {
+    display: block;
+    height: 100%;
+    background: var(--done);
+    transition: width .25s ease;
+  }
+
+  .task {
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .task[data-state="active"] { border-color: var(--active); }
+  .task[data-state="done"] { background: var(--done-soft); border-color: color-mix(in srgb, var(--done) 30%, var(--rule)); }
+  .task[data-state="blocked"] { border-color: var(--blocked); }
+
+  .task > summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 11px 14px;
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .task > summary::-webkit-details-marker { display: none; }
+  .task > summary:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+  .task .caret {
+    font-family: var(--mono);
+    color: var(--ink-mute);
+    font-size: 11px;
+    transition: transform .15s ease;
+  }
+  .task[open] > summary .caret { transform: rotate(90deg); }
+  .task .tbox {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 13px;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+    color: var(--ink-mute);
+    border-radius: 3px;
+    padding: 1px 6px;
+    cursor: pointer;
+    line-height: 1.5;
+  }
+  .task[data-state="done"] .tbox { color: var(--done); border-color: var(--done); }
+  .task[data-state="active"] .tbox { color: var(--active); border-color: var(--active); }
+  .task[data-state="blocked"] .tbox { color: var(--blocked); border-color: var(--blocked); }
+  .task[data-state="done"] > summary .title { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--done) 60%, transparent); color: var(--ink-soft); }
+  .task .title { flex: 1; min-width: 0; }
+  .task .owner {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    white-space: nowrap;
+  }
+  .task-detail {
+    padding: 4px 14px 16px 46px;
+    border-top: 1px dashed var(--rule);
+    font-size: 15px;
+    color: var(--ink-soft);
+  }
+  .task-detail dl {
+    display: grid;
+    grid-template-columns: minmax(0, 11ch) minmax(0, 1fr);
+    gap: 8px 18px;
+    margin: 14px 0 0;
+  }
+  .task-detail dt {
+    font-family: var(--display);
+    font-size: 10.5px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    padding-top: 3px;
+    font-weight: 600;
+  }
+  .task-detail dd { margin: 0; }
+  .task-detail code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+  @media (max-width: 620px) {
+    .task-detail { padding-left: 16px; }
+    .task-detail dl { grid-template-columns: 1fr; gap: 2px; }
+    .task-detail dd { margin-bottom: 10px; }
+    .task .owner { display: none; }
+  }
+
+  .hint {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    margin-top: 14px;
+  }
+
+  /* ---------- risk calculator ---------- */
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+    gap: 24px;
+    margin-top: 26px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .risk-grid { grid-template-columns: 1fr; } }
+
+  .factors { display: grid; gap: 20px; }
+  .factor { border-bottom: 1px solid var(--rule); padding-bottom: 18px; }
+  .factor:last-child { border-bottom: none; padding-bottom: 0; }
+  .factor > .flabel {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .factor .fname {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: .02em;
+  }
+  .factor .fmax { font-family: var(--mono); font-size: 11px; color: var(--ink-mute); }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .opt {
+    font-family: var(--display);
+    font-size: 13px;
+    padding: 6px 11px;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+    color: var(--ink-soft);
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .opt:hover { border-color: var(--accent); color: var(--ink); }
+  .opt .w {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-mute);
+    font-variant-numeric: tabular-nums;
+  }
+  .opt[aria-pressed="true"] {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .opt[aria-pressed="true"] .w { color: var(--accent); }
+
+  .scorecard { padding: 22px; position: sticky; top: 20px; }
+  .score-num {
+    font-family: var(--display);
+    font-size: 68px;
+    font-weight: 700;
+    letter-spacing: -.04em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .score-den { font-family: var(--mono); font-size: 14px; color: var(--ink-mute); }
+  .band-name {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .band-bar {
+    display: grid;
+    grid-template-columns: 5fr 6fr 6fr 8fr;
+    gap: 3px;
+    margin: 16px 0 18px;
+  }
+  .band-bar i {
+    height: 8px;
+    border-radius: 2px;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+  }
+  .band-bar i.on { border-color: transparent; }
+  .band-bar i.on:nth-child(1) { background: var(--done); }
+  .band-bar i.on:nth-child(2) { background: var(--accent); }
+  .band-bar i.on:nth-child(3) { background: var(--active); }
+  .band-bar i.on:nth-child(4) { background: var(--blocked); }
+  .gate {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    border-top: 1px solid var(--rule);
+    padding-top: 14px;
+  }
+  .gate ul { margin: 8px 0 0; padding-left: 18px; }
+  .gate li { margin-bottom: 6px; }
+  .gate strong { color: var(--ink); font-family: var(--display); font-size: 13px; }
+  .score-line {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--ink-mute);
+    margin-top: 16px;
+    word-break: break-word;
+  }
+
+  /* ---------- markdown block ---------- */
+
+  .code-wrap { margin-top: 24px; position: relative; }
+  .code-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface-sunk);
+    border: 1px solid var(--rule);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-mute);
+  }
+  .btn {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--accent-soft); }
+  pre {
+    margin: 0;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 0 0 6px 6px;
+    overflow-x: auto;
+    max-height: 460px;
+    overflow-y: auto;
+  }
+  code, pre { font-family: var(--mono); }
+  pre { font-size: 12.5px; line-height: 1.65; color: var(--ink-soft); }
+
+  /* ---------- enforcement ---------- */
+  .rules { display: grid; gap: 14px; margin-top: 24px; }
+  .rule-row {
+    display: grid;
+    grid-template-columns: minmax(0, 22ch) minmax(0, 1fr);
+    gap: 6px 24px;
+    padding: 16px 18px;
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 5px 5px 0;
+  }
+  .rule-row .rname { font-family: var(--mono); font-size: 13px; color: var(--ink); }
+  .rule-row p { font-size: 15px; color: var(--ink-soft); }
+  @media (max-width: 700px) { .rule-row { grid-template-columns: 1fr; } }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 22px;
+    border-top: 2px solid var(--ink);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-mute);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    justify-content: space-between;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="kicker">
+      <span class="dot"></span>
+      <span class="eyebrow">Engineering Protocol — Draft v0.1</span>
+      <span class="eyebrow" style="color:var(--accent)">Kudos Platform</span>
+    </div>
+    <h1>The PR <em>is</em> the plan.</h1>
+    <p class="deck">Open the pull request before you write the code. The body carries the task queue, each item collapses into its own evidence, and nothing gets checked off until that section is actually finished. When a reviewer arrives, the plan and the diff are the same document.</p>
+    <div class="masthead-meta">
+      <span><b>Applies to</b> api · web · ledger · infra</span>
+      <span><b>Order</b> Why → How → Queue → Risk</span>
+      <span><b>Enforced by</b> pr-body-check CI</span>
+    </div>
+  </header>
+
+  <section id="premise">
+    <div class="sec-head">
+      <span class="num">01</span>
+      <h2>Why draft first</h2>
+    </div>
+    <p class="lede">A PR description written after the fact is a summary. A PR description written before the fact is a contract — and the diff either honors it or doesn't.</p>
+    <dl class="premise">
+      <div>
+        <dt>One artifact</dt>
+        <dd>The ticket, the implementation plan, the test log and the review notes stop living in four tools. The reviewer reads one page and can trust it, because it was updated as the work happened, not reconstructed at the end.</dd>
+      </div>
+      <div>
+        <dt>Scope lock</dt>
+        <dd>The queue is written when the change is still cheap to argue about. A task appearing mid-flight is visible as an edit to the body — scope creep becomes an event, not a surprise in the diff.</dd>
+      </div>
+      <div>
+        <dt>Incremental writing</dt>
+        <dd>Nobody writes a 900-word description at 6pm on Friday. You write forty words per section, at the moment you finish that section, while the detail is still in your head.</dd>
+      </div>
+      <div>
+        <dt>Reviewable state</dt>
+        <dd>Anyone can see how far along the change is without asking. <span class="mono-tag">6/9 done · 1 blocked</span> beats a Slack thread that says "almost there".</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section id="lifecycle">
+    <div class="sec-head">
+      <span class="num">02</span>
+      <h2>The lifecycle</h2>
+    </div>
+    <p class="lede">Five stages. The PR exists for four of them before a reviewer is ever asked to look.</p>
+    <div class="rail">
+      <div class="stage is-open">
+        <div class="stage-n">STAGE 1</div>
+        <h3>Open empty</h3>
+        <p>Branch, one throwaway commit, draft PR. The template loads. Fill in <b>Why</b> only — if you can't, the work isn't ready to start.</p>
+        <span class="state">draft</span>
+      </div>
+      <div class="stage is-open">
+        <div class="stage-n">STAGE 2</div>
+        <h3>Write the queue</h3>
+        <p>Decompose into tasks with owners and exit criteria. Everything starts unchecked. Mark conditional sections required or not-applicable now, with a reason.</p>
+        <span class="state">draft</span>
+      </div>
+      <div class="stage is-open">
+        <div class="stage-n">STAGE 3</div>
+        <h3>Fill as you go</h3>
+        <p>Finish a task, expand it, write the evidence inside it, then check the box. Push. The body and the branch move together.</p>
+        <span class="state">draft</span>
+      </div>
+      <div class="stage">
+        <div class="stage-n">STAGE 4</div>
+        <h3>Close the queue</h3>
+        <p>All items done, skipped with a reason, or moved out to a follow-up issue that is linked. Risk score computed and pasted.</p>
+        <span class="state">ready</span>
+      </div>
+      <div class="stage">
+        <div class="stage-n">STAGE 5</div>
+        <h3>Review the record</h3>
+        <p>Reviewer reads the body top-to-bottom first, diff second. Review comments land as new queue items, not as loose threads.</p>
+        <span class="state">in review</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="anatomy">
+    <div class="sec-head">
+      <span class="num">03</span>
+      <h2>Anatomy of the body</h2>
+    </div>
+    <p class="lede">Ordered for the reader, not the writer: intent before mechanism, mechanism before proof, proof before risk. Conditional sections are declared at the top of the queue so a docs-only PR never types "N/A" nine times on autopilot.</p>
+    <div class="anatomy">
+      <table>
+        <thead>
+          <tr><th>Section</th><th>Answers</th><th>Required</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Why</b></td>
+            <td>What breaks or stays broken if we don't merge this? Links the ticket, states the user-visible outcome in one paragraph.</td>
+            <td><span class="req always">always</span></td>
+          </tr>
+          <tr>
+            <td><b>How</b></td>
+            <td>The approach in 3–6 sentences, plus what you rejected and why. The reviewer's map before they read a diff.</td>
+            <td><span class="req always">always</span></td>
+          </tr>
+          <tr>
+            <td><b>Task queue</b></td>
+            <td>The plan as checkboxes. Each item collapses to owner, exit criteria, evidence, and files touched.</td>
+            <td><span class="req always">always</span></td>
+          </tr>
+          <tr>
+            <td><b>Verification</b></td>
+            <td>What you ran and what it proved. Commands, environments, and one line on what is <em>not</em> covered.</td>
+            <td><span class="req always">always</span></td>
+          </tr>
+          <tr>
+            <td><b>Security</b></td>
+            <td>Authn/authz paths touched, PII or card data in scope, new inputs and how they're validated, secrets handling, new dependencies.</td>
+            <td><span class="req cond">if triggered</span></td>
+          </tr>
+          <tr>
+            <td><b>Performance</b></td>
+            <td>Query plans for new or changed SQL, N+1 risk in GraphQL resolvers, payload size delta, before/after numbers with the measurement method.</td>
+            <td><span class="req cond">if triggered</span></td>
+          </tr>
+          <tr>
+            <td><b>Data &amp; migrations</b></td>
+            <td>Forward and backward plan, row counts, lock behavior, backfill duration, whether the migration is safe to run before the deploy.</td>
+            <td><span class="req cond">if triggered</span></td>
+          </tr>
+          <tr>
+            <td><b>Observability</b></td>
+            <td>The metric, log or trace that tells you this worked in prod — and the alert that fires when it stops.</td>
+            <td><span class="req cond">if triggered</span></td>
+          </tr>
+          <tr>
+            <td><b>Risk &amp; rollback</b></td>
+            <td>The computed score, the flag or config that turns it off, and who to page. Always present because every change has a score, even a 0.</td>
+            <td><span class="req always">always</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="hint">Trigger rules, not judgment calls: Security is required when the diff touches auth, a public resolver, a secret, PII/PAN, or adds a dependency. Performance when it touches SQL, a hot resolver, a loop over a network call, or a lambda in the request path. Data when a migration file changes. Observability when a new code path can fail silently.</p>
+  </section>
+
+  <section id="queue">
+    <div class="sec-head">
+      <span class="num">04</span>
+      <h2>The task queue, live</h2>
+    </div>
+    <p class="lede">Each item is a collapsed <code>&lt;details&gt;</code> block. Collapsed, the queue reads as a status board in ten seconds. Expanded, an item carries everything a reviewer would otherwise have to ask for. Click a box to cycle its state; click a row to expand it.</p>
+
+    <div class="states" role="list">
+      <span class="chip s-queued" role="listitem"><span class="box">[ ]</span> queued — written, not started</span>
+      <span class="chip s-active" role="listitem"><span class="box">[~]</span> in progress — one at a time, ideally</span>
+      <span class="chip s-done" role="listitem"><span class="box">[x]</span> done — code merged to branch <em>and</em> evidence written</span>
+      <span class="chip s-blocked" role="listitem"><span class="box">[!]</span> blocked — reason and unblocker named inside</span>
+      <span class="chip s-na" role="listitem"><span class="box">[-]</span> dropped — with a reason or a linked follow-up</span>
+    </div>
+
+    <div class="mock">
+      <div class="mock-bar">
+        <span class="badge-draft">Draft</span>
+        <span>#4127 · feat(rewards): per-issuer offer caps in the optimizer</span>
+        <span style="margin-left:auto">marcjimenez wants to merge 11 commits into <b>main</b></span>
+      </div>
+      <div class="mock-body">
+        <h4>Why</h4>
+        <p>Chase and Amex both cap category bonuses per quarter, and the optimizer currently recommends cards past their cap — users see a "5% back" recommendation that pays 1%. Support has taken 34 tickets on this in six weeks (KUD-2210). This adds per-issuer caps as a first-class constraint so a capped card drops out of the ranking instead of being silently wrong.</p>
+
+        <h4>How</h4>
+        <p>Caps live in a new <code>issuer_offer_cap</code> table keyed by <code>(issuer, category, period)</code>, loaded once per optimizer run and applied as a filter in the scoring pass rather than as a post-hoc adjustment — a capped card should never enter the ranking, not be removed from it. Rejected: computing caps inside the GraphQL resolver (would have added a per-card query, N+1 on a hot path), and storing remaining balance per user (correct but needs a nightly reconciliation job we don't have yet).</p>
+
+        <h4>Task queue <span id="q-count" style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);letter-spacing:0"></span></h4>
+        <div class="progress-line">
+          <span id="q-label">5 of 8 done</span>
+          <span class="meter"><span id="q-meter" style="width:62%"></span></span>
+          <span id="q-flags">1 blocked</span>
+        </div>
+
+        <div id="queue-list">
+
+          <details class="task" data-state="done">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Schema + migration for <code>issuer_offer_cap</code></span><span class="owner">@marcjimenez</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd>Table exists in staging, migration reverses cleanly, no lock over 50ms on an empty table.</dd>
+                <dt>Evidence</dt><dd><code>migrate up</code> + <code>down</code> run twice on a staging clone; <code>EXPLAIN</code> on the lookup uses the composite index. Applied in 41ms against 0 rows.</dd>
+                <dt>Files</dt><dd><code>db/migrations/20260901_issuer_offer_cap.sql</code>, <code>internal/store/cap.go</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="done">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Seed caps for the top 12 issuers</span><span class="owner">@marcjimenez</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd>Seed data reviewed against each issuer's published terms; source URL recorded per row.</dd>
+                <dt>Evidence</dt><dd>412 rows, each with a <code>source_url</code>. Spot-checked 20 against the issuer's terms page; two discrepancies fixed (Discover rotating cap is per-quarter, not per-year).</dd>
+                <dt>Files</dt><dd><code>db/seeds/issuer_caps.yaml</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="done">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Apply cap filter in the scoring pass</span><span class="owner">@marcjimenez</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd>A capped card is excluded before ranking; uncapped behavior byte-identical to main on the golden fixture set.</dd>
+                <dt>Evidence</dt><dd>All 1,840 golden fixtures unchanged except the 96 that involve a capped issuer. Diffed and reviewed each of the 96 by hand.</dd>
+                <dt>Files</dt><dd><code>internal/optimizer/score.go</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="done">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Expose <code>capReached</code> on the <code>Recommendation</code> type</span><span class="owner">@dpatel</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd>Nullable boolean, resolved from data already in the loader — no new round trip.</dd>
+                <dt>Evidence</dt><dd>Resolver trace shows the same 3 queries per request as main. Schema check passed; field is additive, no breaking change.</dd>
+                <dt>Files</dt><dd><code>graphql/schema/recommendation.graphql</code>, <code>graphql/resolvers/recommendation.ts</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="done">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[x]</span><span class="caret">▸</span><span class="title">Unit + integration coverage for cap boundaries</span><span class="owner">@marcjimenez</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd>Cases at cap−1, exactly at cap, cap+1, and cap reset at period boundary.</dd>
+                <dt>Evidence</dt><dd>14 new table-driven cases in <code>score_test.go</code>; 2 integration tests hitting a seeded Postgres. Coverage on the changed package 71% → 84%.</dd>
+                <dt>Files</dt><dd><code>internal/optimizer/score_test.go</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="active" open>
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[~]</span><span class="caret">▸</span><span class="title">Backfill job for historical recommendations</span><span class="owner">@marcjimenez</span></summary>
+            <div class="task-detail">
+              <p>Rewrites cached recommendations older than the cap rollout so the app doesn't show stale uncapped advice for up to 24h.</p>
+              <dl>
+                <dt>Exit</dt><dd>Job is idempotent, chunked at 5k rows, and can be stopped mid-run without leaving a partial period.</dd>
+                <dt>Evidence</dt><dd><em>In progress</em> — dry run against a staging clone (1.2M rows) took 19 minutes. Re-running to confirm a second pass is a no-op.</dd>
+                <dt>Files</dt><dd><code>cmd/backfill_caps/main.go</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="blocked">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[!]</span><span class="caret">▸</span><span class="title">Cap-reached copy in the recommendation card</span><span class="owner">@rlin</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd>Copy approved by compliance; string lands in the i18n bundle, not inline.</dd>
+                <dt>Blocked by</dt><dd>Compliance review of the phrase "you've hit this card's bonus cap" — KUD-2231, with @tsong, expected Thu. Ships behind <code>rewards_issuer_caps</code> so this does not block merge; the flag stays off until the string lands.</dd>
+                <dt>Files</dt><dd><code>web/components/RecommendationCard.tsx</code></dd>
+              </dl>
+            </div>
+          </details>
+
+          <details class="task" data-state="queued">
+            <summary><span class="tbox" role="button" tabindex="0" aria-label="cycle state">[ ]</span><span class="caret">▸</span><span class="title">Dashboard panel + alert on cap-filter rate</span><span class="owner">@marcjimenez</span></summary>
+            <div class="task-detail">
+              <dl>
+                <dt>Exit</dt><dd><code>optimizer.cards_capped_total</code> emitted per issuer; panel added; alert fires if the rate jumps above 40% of recommendations in an hour, which would mean bad seed data.</dd>
+                <dt>Evidence</dt><dd><em>Not started.</em></dd>
+                <dt>Files</dt><dd><code>internal/optimizer/metrics.go</code>, <code>infra/grafana/optimizer.json</code></dd>
+              </dl>
+            </div>
+          </details>
+
+        </div>
+        <p class="hint">Reviewer contract: an item is only <span class="mono-tag">[x]</span> when the code is on the branch <em>and</em> the evidence line inside it is written. "Done, will add tests" is not done — it's <span class="mono-tag">[~]</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="risk">
+    <div class="sec-head">
+      <span class="num">05</span>
+      <h2>Risk assessment score</h2>
+    </div>
+    <p class="lede">Five factors, weighted, scored 0–24. The point isn't precision — it's that two engineers scoring the same PR land in the same band, and the band decides the review requirements instead of a hallway conversation. Score once when the queue closes, paste the line into the body.</p>
+
+    <div class="risk-grid">
+      <div class="panel" style="padding:22px">
+        <div class="factors" id="factors"></div>
+      </div>
+
+      <div class="panel scorecard">
+        <div class="eyebrow">Risk score</div>
+        <div><span class="score-num" id="score">11</span><span class="score-den"> / 24</span></div>
+        <div class="band-name" id="band-name">Elevated</div>
+        <div class="band-bar" id="band-bar"><i></i><i></i><i></i><i></i></div>
+        <div class="gate">
+          <strong id="gate-title">Required for this band</strong>
+          <ul id="gate-list"></ul>
+        </div>
+        <div class="score-line" id="score-line"></div>
+      </div>
+    </div>
+
+    <div class="anatomy" style="margin-top:32px">
+      <table>
+        <thead><tr><th>Band</th><th>Score</th><th>What it obligates</th></tr></thead>
+        <tbody>
+          <tr><td><b>Low</b></td><td><span class="mono-tag">0–4</span></td><td>One reviewer. Merge on green. No extra sections.</td></tr>
+          <tr><td><b>Guarded</b></td><td><span class="mono-tag">5–10</span></td><td>One reviewer from the owning team. Verification section must name a staging run.</td></tr>
+          <tr><td><b>Elevated</b></td><td><span class="mono-tag">11–16</span></td><td>Two reviewers, one outside the pairing. Feature flag required. Rollback rehearsed, not just described.</td></tr>
+          <tr><td><b>High</b></td><td><span class="mono-tag">17–24</span></td><td>Two reviewers plus the domain owner. Staged rollout with a named % schedule. Deploy in business hours with an owner online.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="enforce">
+    <div class="sec-head">
+      <span class="num">06</span>
+      <h2>Making it stick</h2>
+    </div>
+    <p class="lede">A template without a check is a suggestion. Four rules, all mechanical, all cheap — every one of them can fail a status check rather than a human's patience.</p>
+    <div class="rules">
+      <div class="rule-row">
+        <div class="rname">queue-closed</div>
+        <p>Blocks "ready for review" while any item is <span class="mono-tag">[ ]</span> or <span class="mono-tag">[~]</span>. <span class="mono-tag">[!]</span> and <span class="mono-tag">[-]</span> pass only if the block has a <code>Blocked by</code> or reason line.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">sections-triggered</div>
+        <p>Diffs the changed paths against the trigger rules. Touched a migration with no <b>Data</b> section? Failing check, with the file that triggered it named in the output.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">score-present</div>
+        <p>Requires a <code>RISK: n/24 (band)</code> line whose factor breakdown parses. Elevated and High also require a flag name and a rollback line.</p>
+      </div>
+      <div class="rule-row">
+        <div class="rname">body-drift</div>
+        <p>Warns (never blocks) when commits land after the last body edit — the signal that the record and the branch have drifted apart.</p>
+      </div>
+    </div>
+    <p class="hint">Every checkbox in the template is verifiable in under thirty seconds. "Code follows best practices" is not a checkbox; "existing tests pass locally" is.</p>
+  </section>
+
+  <section id="template">
+    <div class="sec-head">
+      <span class="num">07</span>
+      <h2>The template</h2>
+    </div>
+    <p class="lede">Drop at <code>.github/pull_request_template.md</code>. HTML comments carry the instructions and vanish on render, so a filled-in body reads clean.</p>
+    <div class="code-wrap">
+      <div class="code-bar">
+        <span>.github/pull_request_template.md</span>
+        <button class="btn" id="copy-btn" type="button">Copy</button>
+      </div>
+      <pre id="tpl">&lt;!-- Open this PR as a DRAFT before writing code. Fill Why + How + Queue first. --&gt;
+
+## Why
+
+&lt;!-- What breaks or stays broken if this doesn't merge? One paragraph. Link the ticket. --&gt;
+
+Closes KUD-
+
+## How
+
+&lt;!-- The approach in 3-6 sentences. Then: what you rejected, and why. --&gt;
+
+**Rejected:**
+
+## Task queue
+
+&lt;!-- [ ] queued  [~] in progress  [x] done  [!] blocked  [-] dropped
+     An item is [x] only when the code is on the branch AND the Evidence line is written. --&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;strong&gt;[ ] 1. Task name&lt;/strong&gt; — @owner&lt;/summary&gt;
+
+- **Exit criteria:**
+- **Evidence:**
+- **Files:**
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;strong&gt;[ ] 2. Task name&lt;/strong&gt; — @owner&lt;/summary&gt;
+
+- **Exit criteria:**
+- **Evidence:**
+- **Files:**
+
+&lt;/details&gt;
+
+## Verification
+
+- [ ] Unit tests pass locally
+- [ ] Integration tests pass against a seeded database
+- [ ] Exercised in staging &lt;!-- how, and what you saw --&gt;
+- **Not covered by this PR:**
+
+## Conditional sections
+
+&lt;!-- Declare each one required or N/A WITH A REASON, up front. Delete the blocks you marked N/A. --&gt;
+
+- Security: required / N/A because
+- Performance: required / N/A because
+- Data & migrations: required / N/A because
+- Observability: required / N/A because
+
+&lt;details&gt;
+&lt;summary&gt;&lt;strong&gt;[ ] Security&lt;/strong&gt;&lt;/summary&gt;
+
+&lt;!-- Triggered by: auth/authz, a public resolver, secrets, PII or card data, a new dependency. --&gt;
+
+- **Authn/authz paths touched:**
+- **PII or card data in scope:**
+- **New inputs and how they're validated:**
+- **Secrets / credentials:**
+- **New dependencies (and why this one):**
+- [ ] No secret, token or key added to the diff
+- [ ] Every new endpoint or resolver has an explicit authorization check
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;strong&gt;[ ] Performance&lt;/strong&gt;&lt;/summary&gt;
+
+&lt;!-- Triggered by: new/changed SQL, a hot resolver, a loop over a network call, request-path lambda. --&gt;
+
+- **Before / after (with how you measured):**
+- **Query plans for new or changed SQL:**
+- **N+1 risk (resolvers, loops over calls):**
+- **Payload / bundle size delta:**
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;strong&gt;[ ] Data & migrations&lt;/strong&gt;&lt;/summary&gt;
+
+&lt;!-- Triggered by: any change under db/migrations. --&gt;
+
+- **Forward plan:**
+- **Backward plan (tested, not theorized):**
+- **Rows affected / expected duration:**
+- **Lock behavior:**
+- [ ] Migration is safe to run before the deploy
+- [ ] Backfill is idempotent and resumable
+
+&lt;/details&gt;
+
+&lt;details&gt;
+&lt;summary&gt;&lt;strong&gt;[ ] Observability&lt;/strong&gt;&lt;/summary&gt;
+
+&lt;!-- Triggered by: any new code path that can fail silently. --&gt;
+
+- **Metric / log / trace that proves this works in prod:**
+- **Alert that fires when it stops:**
+- **Dashboard:**
+
+&lt;/details&gt;
+
+## Risk &amp; rollback
+
+&lt;!-- Score it: blast radius (0-6) + data (0-5) + reversibility (0-5) + sensitivity (0-5) + verification (0-3) --&gt;
+
+RISK: n/24 (band) — radius n, data n, revert n, sensitivity n, verification n
+
+- **Feature flag:**
+- **Rollback procedure:**
+- **Who to page:**
+</pre>
+    </div>
+  </section>
+
+  <footer>
+    <span>PR Protocol · draft for discussion</span>
+    <span>Ordering: Why → How → Queue → Risk</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- task state cycling ---------- */
+
+  var ORDER = ["queued", "active", "done", "blocked", "na"];
+  var GLYPH = { queued: "[ ]", active: "[~]", done: "[x]", blocked: "[!]", na: "[-]" };
+
+  function refreshCounts() {
+    var tasks = Array.prototype.slice.call(document.querySelectorAll("#queue-list .task"));
+    var done = tasks.filter(function (t) { return t.dataset.state === "done"; }).length;
+    var blocked = tasks.filter(function (t) { return t.dataset.state === "blocked"; }).length;
+    var dropped = tasks.filter(function (t) { return t.dataset.state === "na"; }).length;
+    var total = tasks.length;
+    document.getElementById("q-label").textContent = done + " of " + total + " done";
+    document.getElementById("q-meter").style.width = (total ? Math.round((done / total) * 100) : 0) + "%";
+    var flags = [];
+    if (blocked) { flags.push(blocked + " blocked"); }
+    if (dropped) { flags.push(dropped + " dropped"); }
+    document.getElementById("q-flags").textContent = flags.join(" · ");
+    document.getElementById("q-count").textContent = done === total ? "· queue closed" : "· open";
+  }
+
+  function cycle(task) {
+    var i = ORDER.indexOf(task.dataset.state);
+    var next = ORDER[(i + 1) % ORDER.length];
+    task.dataset.state = next;
+    task.querySelector(".tbox").textContent = GLYPH[next];
+    refreshCounts();
+  }
+
+  document.querySelectorAll("#queue-list .tbox").forEach(function (box) {
+    box.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      cycle(box.closest(".task"));
+    });
+    box.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        e.stopPropagation();
+        cycle(box.closest(".task"));
+      }
+    });
+  });
+
+  refreshCounts();
+
+  /* ---------- risk score ---------- */
+
+  var FACTORS = [
+    {
+      key: "radius", name: "Blast radius", max: 6,
+      opts: [
+        { w: 0, label: "Internal tool or docs" },
+        { w: 2, label: "One service, one team" },
+        { w: 4, label: "Shared service or public API" },
+        { w: 6, label: "Money movement or rewards ledger" }
+      ]
+    },
+    {
+      key: "data", name: "Data footprint", max: 5,
+      opts: [
+        { w: 0, label: "No schema change" },
+        { w: 1, label: "Additive column or table" },
+        { w: 3, label: "Backfill or rewrite" },
+        { w: 5, label: "Destructive migration" }
+      ]
+    },
+    {
+      key: "revert", name: "Reversibility", max: 5,
+      opts: [
+        { w: 0, label: "Clean revert" },
+        { w: 2, label: "Revert plus a config change" },
+        { w: 5, label: "Irreversible once data is written" }
+      ]
+    },
+    {
+      key: "sensitivity", name: "Sensitivity", max: 5,
+      opts: [
+        { w: 0, label: "No PII, no auth" },
+        { w: 3, label: "Touches PII" },
+        { w: 5, label: "Touches auth, secrets or card data" }
+      ]
+    },
+    {
+      key: "verification", name: "Verification depth", max: 3,
+      opts: [
+        { w: 0, label: "Unit + integration + staging" },
+        { w: 2, label: "Unit tests only" },
+        { w: 3, label: "Manual only, or none" }
+      ]
+    }
+  ];
+
+  /* opens in the state of the example PR above */
+  var chosen = { radius: 4, data: 3, revert: 2, sensitivity: 0, verification: 0 };
+
+  var BANDS = [
+    {
+      name: "Low", max: 4,
+      gates: ["One reviewer, any team", "Merge on green CI", "No conditional sections needed"]
+    },
+    {
+      name: "Guarded", max: 10,
+      gates: ["One reviewer from the owning team", "Verification section names a staging run", "Rollback described in one line"]
+    },
+    {
+      name: "Elevated", max: 16,
+      gates: ["Two reviewers, one outside the pairing", "Feature flag required and named in the body", "Rollback rehearsed in staging, not just described", "Deploy announced in #eng-deploys"]
+    },
+    {
+      name: "High", max: 24,
+      gates: ["Two reviewers plus the domain owner", "Staged rollout with a written % schedule", "Business-hours deploy with an owner online", "Dashboard and alert live before the flag opens"]
+    }
+  ];
+
+  var host = document.getElementById("factors");
+
+  FACTORS.forEach(function (f) {
+    var wrap = document.createElement("div");
+    wrap.className = "factor";
+
+    var head = document.createElement("div");
+    head.className = "flabel";
+    head.innerHTML = '<span class="fname">' + f.name + '</span><span class="fmax">0–' + f.max + '</span>';
+    wrap.appendChild(head);
+
+    var opts = document.createElement("div");
+    opts.className = "opts";
+    opts.setAttribute("role", "group");
+    opts.setAttribute("aria-label", f.name);
+
+    f.opts.forEach(function (o) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "opt";
+      b.setAttribute("aria-pressed", chosen[f.key] === o.w ? "true" : "false");
+      b.innerHTML = '<span>' + o.label + '</span><span class="w">+' + o.w + '</span>';
+      b.addEventListener("click", function () {
+        chosen[f.key] = o.w;
+        Array.prototype.forEach.call(opts.children, function (sib) {
+          sib.setAttribute("aria-pressed", sib === b ? "true" : "false");
+        });
+        render();
+      });
+      opts.appendChild(b);
+    });
+
+    wrap.appendChild(opts);
+    host.appendChild(wrap);
+  });
+
+  function render() {
+    var total = FACTORS.reduce(function (sum, f) { return sum + chosen[f.key]; }, 0);
+    var band = BANDS.find(function (b) { return total <= b.max; });
+    var idx = BANDS.indexOf(band);
+
+    document.getElementById("score").textContent = total;
+    document.getElementById("band-name").textContent = band.name;
+    document.getElementById("band-name").style.color =
+      ["var(--done)", "var(--accent)", "var(--active)", "var(--blocked)"][idx];
+
+    Array.prototype.forEach.call(document.getElementById("band-bar").children, function (seg, i) {
+      seg.className = i <= idx ? "on" : "";
+    });
+
+    var list = document.getElementById("gate-list");
+    list.innerHTML = "";
+    band.gates.forEach(function (g) {
+      var li = document.createElement("li");
+      li.textContent = g;
+      list.appendChild(li);
+    });
+
+    document.getElementById("score-line").textContent =
+      "RISK: " + total + "/24 (" + band.name.toLowerCase() + ") — " +
+      FACTORS.map(function (f) { return f.key + " " + chosen[f.key]; }).join(", ");
+  }
+
+  render();
+
+  /* ---------- copy the template ---------- */
+
+  var btn = document.getElementById("copy-btn");
+  btn.addEventListener("click", function () {
+    var text = document.getElementById("tpl").textContent;
+    var done = function (ok) {
+      btn.textContent = ok ? "Copied" : "Select and copy";
+      setTimeout(function () { btn.textContent = "Copy"; }, 1800);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    } else {
+      done(false);
+    }
+  });
+})();
+</script>
