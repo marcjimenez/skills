@@ -32,9 +32,22 @@ Incl. anything unverified from the research brief §7.
 ## Verification plan
 Observable checks that prove it works — these become `implement`'s `verify:` fields.
 
+## Integration scenarios
+What proves the feature works against a real running system. `/marcjimenez:integration-test` executes these,
+so each needs all four parts; anything vaguer is not runnable. Write "none: <reason>" only when the change
+has no runtime surface at all.
+
+### <scenario name>
+- **Given:** <starting state, and any fixture that must exist first>
+- **Action:** <the exact call — the full query, mutation, request, or command>
+- **Expected:** <the response shape AND the database rows it should produce>
+- **Undo:** <the exact reversal, scoped to the rows this scenario creates>
+
 ## Task seed
 - [ ] <atomic task> — verify: <exact check>
 - [ ] <atomic task> — verify: <exact check>
+- [ ] End-to-end run — verify: /marcjimenez:integration-test green on every scenario above
+- [ ] Cleanup — verify: re-query shows every mutated row gone
 
 ## Sources
 Citations copied from the research brief (URLs pinned to commit SHAs).

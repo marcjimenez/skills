@@ -32,7 +32,9 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
     "branch_prefixes": ["feat", "fix", "refactor", "docs"],
     "assign_reviewer": true,
     "reviewers": ["copilot"]
-  }
+  },
+
+  "integration_test": { "default_env": "prod", "environments": { "...": "see /marcjimenez:integration-test reference/RECIPE-SCHEMA.md" } }
 }
 ```
 
@@ -102,6 +104,20 @@ Read by `/marcjimenez:implement`.
 | `branch_prefixes` | string[] | allowed branch-name prefixes |
 | `assign_reviewer` | bool | assign a reviewer after opening the PR |
 | `reviewers` | string[] | reviewers to assign (e.g. `["copilot"]`) |
+
+## `integration_test`
+
+Read by `/marcjimenez:integration-test`: how to start this repo, authenticate against it, and read the rows
+a run wrote. Normally per-repo, since the recipe is repo-specific. The skill derives it from the repo's own
+files when absent and offers to persist it after a green run, so there is nothing to configure by hand.
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `default_env` | string | the environment pre-selected when the skill asks; it never skips the question |
+| `environments` | object | named environments, each with `mutating`, `services`, `ready_check`, `auth`, `endpoint`, `data_access`, `teardown` |
+
+Full field detail: `/marcjimenez:integration-test` `reference/RECIPE-SCHEMA.md`. Credentials follow the
+same rule as everything else here — `auth.env_var` names the variable, the value lives in `secrets.env`.
 
 ## `secrets.env` (API keys)
 

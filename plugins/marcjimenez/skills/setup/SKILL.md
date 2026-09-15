@@ -89,7 +89,14 @@ a re-research.
 
 Ask `defaults.ponytail_intensity` (`lite`/`full`/`ultra`, default `full`).
 
-## 6. Target + write
+## 6. Integration testing (optional)
+
+`/marcjimenez:integration-test` needs no configuration: it derives a repo's run recipe from that repo's own
+files and offers to persist it after a green run. Offer to set `integration_test` by hand only if the user
+wants to pre-seed a recipe or change which environment is pre-selected (`default_env`, most often `prod`).
+Shape: `/marcjimenez:integration-test` `reference/RECIPE-SCHEMA.md`.
+
+## 7. Target + write
 
 Ask **global** (`$CONFIG_HOME/global/config.json`, every repo) vs **per-repo**
 (`$CONFIG_HOME/repos/$REPO_KEY/config.json`, this repo only — wins over global). `mkdir -p` the parent, write

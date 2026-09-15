@@ -11,6 +11,7 @@ The dimensions to interrogate (the DO/DON'T method and the confirmation GATE liv
 | Contracts | Does this change any API, schema, type, or interface? |
 | Edge cases | What are the weird inputs? Empty? Null? Concurrent? |
 | Done | What specific observable behavior means "this works"? |
+| End-to-end | What real call proves it works, against which environment, and what must be undone afterwards? |
 
 ## Inputs to fetch first
 
