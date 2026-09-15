@@ -12,9 +12,7 @@ disable-model-invocation: true
 
 > **Beta.** This is `/marcjimenez:implement` plus Phase 5, which proves the feature actually works against
 > a running system before review sees it. The stable `/marcjimenez:implement` is unchanged and still owns
-> the automatic triggers. Promote this over it once all four hold: three green runs across two or more
-> repos, one run that mutated prod and proved cleanup by re-query, one discovery run that derived a working
-> recipe unaided, and one waiver run on a diff with no runtime surface.
+> the automatic triggers. Promotion criteria are in the repo README.
 
 The full build cycle. You are bound to it until every task box is `[x]`. No shortcuts, no early exits. The
 only valid exit is a fully-checked task file with a merge-ready PR.
@@ -82,11 +80,13 @@ This phase is required. It is skipped ONLY by recording a waiver, never silently
 > No end-to-end surface: {reason}
 
 Write that line into the task file box and into the PR body. A waiver is legitimate when the diff cannot be
-exercised at runtime — a docs-only change, a prompt-ware or config repo, a comment fix. It is not
+exercised at runtime: a docs-only change, a prompt-ware or config repo, a comment fix. It is not
 legitimate because the recipe was hard to work out or the scenarios were not written; in that case go and
 work them out.
 
-Mark both Phase 2 boxes `[x]` here. A mutation left standing keeps the run open no matter what else passed.
+Mark both Phase 2 boxes `[x]` here. On a waiver run the cleanup box is satisfied by there having been
+nothing to mutate; note that alongside the waiver reason. A mutation left standing keeps the run open no
+matter what else passed.
 
 ## Phase 6 — Review, THEN PR (hard gate)
 

@@ -46,6 +46,10 @@ has no runtime surface at all.
 ## Task seed
 - [ ] <atomic task> — verify: <exact check>
 - [ ] <atomic task> — verify: <exact check>
+
+Add these two only when the plan hands off to `/marcjimenez:implement-beta`. `/marcjimenez:implement` has
+no phase that can check them, and it may not stop with an unchecked box:
+
 - [ ] End-to-end run — verify: /marcjimenez:integration-test green on every scenario above
 - [ ] Cleanup — verify: re-query shows every mutated row gone
 

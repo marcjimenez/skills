@@ -15,7 +15,7 @@ You will NOT write code until requirements are unambiguous. This is non-negotiab
 If the request contains a URL or ticket reference, fetch and analyze it first.
 
 Interrogate the user on EVERY applicable dimension — the full table is in `reference/DIMENSIONS.md`
-(Scope, I/O, Errors, Integration, Contracts, Edge cases, Done).
+(Scope, I/O, Errors, Integration, Contracts, Edge cases, Done, End-to-end).
 
 **DO:**
 - Ask all questions in ONE message (not one at a time).

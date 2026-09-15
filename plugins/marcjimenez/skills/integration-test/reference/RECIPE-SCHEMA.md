@@ -49,8 +49,10 @@ The environment pre-selected when the skill asks. It never skips the question. M
 because that is where the real data lives.
 
 ### `environments.<name>.mutating`
-When true, the skill requires a written reversal for every scenario before issuing it, and the teardown
-proof becomes mandatory. Set it true for anything writing to a shared database, including staging.
+Marks an environment as writing real data. It is advisory: it shapes how the Phase 2 question is phrased
+and how loudly the run warns. It never relaxes a rule. Every scenario that issues a write needs a written
+reversal before it runs, and the cleanup proof is mandatory in every environment, whatever this says. Set
+it true for anything writing to a shared database, including staging.
 
 ### `services`
 Commands started in the background before the run, in array order. Each should be a long-running process.
@@ -76,6 +78,9 @@ How to read the rows a scenario wrote.
 |--------|-------------|---------|
 | `mcp` | `tool` | name of an MCP query tool, e.g. `mcp__postgres-prod__query` |
 | `command` | `command` | a shell command taking SQL on stdin, e.g. `psql "$DATABASE_URL" -c` |
+
+A channel is read-only unless the recipe says otherwise. Reversals run through the API's own inverse
+operation wherever one exists; raw SQL is a last resort for when the API offers none.
 
 Prefer `command` when the repo has a working CLI, since it does not assume a particular MCP server is
 installed. Omit `data_access` entirely for a repo with no database; the skill then verifies through the

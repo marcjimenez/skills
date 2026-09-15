@@ -20,7 +20,7 @@ All configuration and artifacts are stored in a cross-platform directory outside
 | `/marcjimenez:plan` | Produces research-backed implementation plans with concrete code examples and task breakdowns |
 | `/marcjimenez:brainstorm` | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
 | `/marcjimenez:implement` | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
-| `/marcjimenez:implement-beta` | Opt-in trial of the build cycle with a required end-to-end verification phase before code review (see Beta below) |
+| `/marcjimenez:implement-beta` | Opt-in trial of the build cycle with a required end-to-end verification phase before code review; invoke by name, never auto-triggered |
 | `/marcjimenez:setup` | Configures external connections, API keys, code review depth, VCS settings, and default preferences |
 
 ### Primitives (Auto-Invoked)

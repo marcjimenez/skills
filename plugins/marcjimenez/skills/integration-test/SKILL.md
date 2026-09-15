@@ -4,9 +4,9 @@ description: >-
   Runs a feature end to end against a real running system: starts the services, acquires a token, issues
   the actual calls, inspects the database rows they wrote, then undoes them and proves the undo worked.
   Learns each repo's run recipe once and reuses it; discovers the recipe from the repo's own files when
-  none exists. Use PROACTIVELY after unit tests and lint are green and BEFORE code review, so the review
-  sees real evidence. Triggers on: "integration test", "test it end to end", "does this actually work",
-  "run it against prod", "test against dev", a finished feature awaiting verification.
+  none exists. Always asks which environment to target before doing anything. Invoked by name, or by
+  /marcjimenez:implement-beta as its end-to-end phase. Triggers on: "integration test", "test it end to
+  end", "does this actually work", "run it against prod", "test against dev".
 ---
 
 # marcjimenez integration-test
@@ -19,13 +19,19 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDAT
 TOP="$(git rev-parse --show-toplevel)"
 REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
 RUN_DIR="$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>"
+mkdir -p "$RUN_DIR"
 ```
 
+Reuse the plan's or task file's `<slug>`; derive one per `/marcjimenez:task-tracking` if neither exists.
 Evidence goes to `$RUN_DIR/integration.md`, never inside the target repo.
 
 ## Phase 1 — Load the recipe
 
-Read the `integration_test` section through the standard precedence (inline args → per-repo → global →
+First, check `$RUN_DIR/integration.md` for reversals from an earlier run with no matching cleanup proof.
+If any exist, present them and settle them before starting anything new. A previous run's standing
+mutations are this run's first job.
+
+Then read the `integration_test` section through the standard precedence (inline args → per-repo → global →
 defaults). Schema: `reference/RECIPE-SCHEMA.md`.
 
 No recipe for this repo means discovery: work out how to run it from the repo's own files per
@@ -57,18 +63,28 @@ Each scenario needs four parts. Without all four it is not runnable:
 | Expected | the observable result: response shape AND the database rows it should produce |
 | Undo | the exact reversal that puts the system back |
 
+A fixture this run creates to satisfy Given is itself a mutation and needs its own written reversal. A
+fixture that already existed is never deleted.
+
 ## Phase 4 — Bring the system up
 
 Start `services` in the background, poll `ready_check` until it passes (fail the run on timeout rather
-than proceeding against a half-started system), then acquire the token via `auth`. Never echo the token.
+than proceeding against a half-started system), then acquire the token via `auth`. Capture it straight
+into the variable in one command, `TOKEN="$({auth.command})"`, check only that it is non-empty, and never
+run the command bare where its output would reach the transcript.
+
+From here on, every exit runs `teardown` and writes whatever evidence exists. A timeout, a failed
+scenario, and a failed reversal all leave services running otherwise.
 
 ## Phase 5 — Run each scenario
 
 For each one, in this order:
 
-1. Query the database for the **before** state.
+1. Query the database for the **before** state, capturing every column the reversal will need to restore,
+   not just whether the row exists.
 2. Write the scenario's exact reversal into `$RUN_DIR/integration.md`. This happens BEFORE the mutation is
-   issued, so a crash mid-run still leaves a written record of what needs undoing.
+   issued, so a crash mid-run still leaves a written record of what needs undoing. Confirm the file
+   contains it before going on. No written reversal, no mutation.
 3. Issue the action. Capture the full response.
 4. Query the database for the **after** state.
 5. Compare against Expected. A mismatch is a finding: report it and fix the code, do not adjust the
@@ -76,27 +92,52 @@ For each one, in this order:
 
 ## Phase 6 — Undo, then prove it
 
-Run every reversal, then **re-query** to show the rows are gone. A zero exit code is not proof. If a
-reversal fails, say so loudly and leave the record in the evidence file; do not mark the run clean.
+Run the reversals in reverse order of the mutations that created them, so a row another row references is
+not deleted first. Then **re-query** to show each row is gone, or restored to its before-values for a
+reversal that undid an update. A zero exit code is not proof.
+
+A reversal runs through the same surface as the action: the API's own inverse operation wherever one
+exists. Raw SQL is a last resort, used only when the recipe declares a write-capable `data_access` channel
+and the API offers no inverse.
+
+If a reversal fails, attempt the remaining ones so no further rows are stranded, then stop. Report the rows
+still standing, the reversal that failed, and its error. Do not persist the recipe, do not report a green
+run, and do not hand control back to the caller as passing. A standing mutation is an open incident.
 
 ## Phase 7 — Tear down and persist
 
-Stop the backgrounded services per `teardown`. Write `$RUN_DIR/integration.md`: environment, each scenario
-with its action, response, before and after rows, and its cleanup proof.
+Stop the backgrounded services per `teardown`. **Append** the run summary to `$RUN_DIR/integration.md`:
+environment, each scenario with its action, response, before and after rows, and its cleanup proof. Append
+only, because the reversals written during Phase 5 are the crash record and stay in the file verbatim.
+Redact credentials from anything captured: `Authorization: Bearer <redacted>`, never the value.
 
 If the recipe came from discovery and the run went green, offer to persist it to
 `$CONFIG_HOME/repos/$REPO_KEY/config.json` so the next run skips discovery. Ask first.
 
+## The run is green when
+
+- Every scenario's after-state matched its Expected, response and rows both.
+- Every reversal ran, and a re-query showed each row gone or restored to its before-values.
+- The services started in Phase 4 are stopped.
+- `$RUN_DIR/integration.md` holds every scenario with its before rows, after rows, and cleanup proof, and
+  no credential values.
+
+Anything short of all four is not green, whatever else passed.
+
 ## Inviolable rules
 
-1. **The undo is written down before the mutation runs.** A mutation whose reversal you do not know stops
-   the run. Ask rather than guessing at a DELETE.
+1. **The undo is written down before the mutation runs.** For a mutation whose reversal you do not know,
+   stop and ask the user for the exact reversal; resume only once they give it. Never infer one.
 2. **Cleanup is proven by re-querying**, never inferred from an exit code.
-3. **No scenarios means no run.** Go get them. Do not substitute a smoke test you invented and call the
-   feature verified.
+3. **Scenarios come from the plan**, or are derived from confirmed requirements and confirmed by the user.
+   Never a smoke test you invented and called verification.
 4. **A recipe is persisted only after it has worked** end to end. Never save a guess.
 5. **The environment question is asked every run.** A remembered answer is not consent.
-6. **Never widen a reversal.** Undo exactly the rows this run created, matched by id. A `DELETE` with no
-   `WHERE`, or one scoped by timestamp alone, is never acceptable.
-7. **Secrets stay out of the transcript.** Tokens are captured into variables, never echoed, never written
+6. **Scope every reversal to the exact ids this run touched.** A row this run created is deleted by id. A
+   row this run modified is restored, column by column, to the values captured in the before-query. A
+   `DELETE` with no `WHERE`, or one scoped by timestamp alone, is never acceptable.
+7. **A scenario acts only on data this run owns.** Against a mutating environment, every action targets
+   records this run created or a test account the recipe names. A scenario that would modify pre-existing
+   production rows stops the run and goes to the user.
+8. **Secrets stay out of the transcript.** Tokens are captured into variables, never echoed, never written
    into the evidence file.
