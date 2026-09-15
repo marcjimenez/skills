@@ -25,11 +25,44 @@ while IFS= read -r f; do
   printf '%s\n' "$fm" | grep -q '^description:' || err "missing description: $f"
 done < <(find plugins/marcjimenez/skills -name SKILL.md)
 note "$count skills"
-[ "$count" -eq 15 ] || err "expected 15 skills, found $count"
+[ "$count" -eq 17 ] || err "expected 17 skills, found $count"
 
 echo "== /marcjimenez:<name> references resolve =="
 for name in $(grep -rho '/marcjimenez:[a-z][a-z-]*' plugins/marcjimenez | sed 's|/marcjimenez:||' | sort -u); do
   if find plugins/marcjimenez/skills -type d -name "$name" | grep -q .; then note "ok /marcjimenez:$name"; else err "dangling reference /marcjimenez:$name"; fi
+done
+
+echo "== invocation posture: frontmatter matches README =="
+# Frontmatter only. The string also appears in writing-for-agents' prose, which is not a flag.
+flagged=""
+for f in plugins/marcjimenez/skills/*/SKILL.md; do
+  if awk 'NR>1{if($0=="---")exit; print}' "$f" | grep -q '^disable-model-invocation: *true'; then
+    flagged="$flagged$(basename "$(dirname "$f")")
+"
+  fi
+done
+flagged="$(printf '%s' "$flagged" | sort)"
+documented="$(grep -oE '`/?marcjimenez:[a-z][a-z-]*` *\| *user only' README.md 2>/dev/null \
+  | sed -E 's|.*marcjimenez:([a-z-]*)`.*|\1|' | sort || true)"
+if [ "$flagged" = "$documented" ]; then
+  note "ok user-only: $(printf '%s' "$flagged" | tr '\n' ' ')"
+else
+  err "README 'user only' rows disagree with disable-model-invocation frontmatter"
+  note "flagged:    $(printf '%s' "$flagged" | tr '\n' ' ')"
+  note "documented: $(printf '%s' "$documented" | tr '\n' ' ')"
+fi
+
+echo "== no skill invokes a user-only skill =="
+# The Skill tool refuses to launch a skill carrying disable-model-invocation, so a handoff
+# into one always errors at runtime. Guard the pairing, not just the flag.
+handoffs="$(grep -rhoiE 'nvoke `/marcjimenez:[a-z][a-z-]*`' plugins/marcjimenez/skills 2>/dev/null \
+  | sed -E 's|.*marcjimenez:([a-z-]*)`|\1|' | sort -u || true)"
+for name in $handoffs; do
+  if printf '%s\n' "$flagged" | grep -qx "$name"; then
+    err "handoff into user-only skill: /marcjimenez:$name (the Skill tool will refuse it)"
+  else
+    note "ok handoff -> /marcjimenez:$name"
+  fi
 done
 
 echo "== no stale references =="
