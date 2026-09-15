@@ -30,7 +30,8 @@ since the recipe is repo-specific) or `$CONFIG_HOME/global/config.json`.
 
         "data_access": {
           "kind": "mcp",                // "mcp" or "command"
-          "tool": "mcp__postgres-prod__query"
+          "tool": "mcp__postgres-prod__query",
+          "writable": false             // default false; true only if this channel may run a reversal
         },
 
         "teardown": ["<stop the backgrounded services>"]
@@ -79,8 +80,10 @@ How to read the rows a scenario wrote.
 | `mcp` | `tool` | name of an MCP query tool, e.g. `mcp__postgres-prod__query` |
 | `command` | `command` | a shell command taking SQL on stdin, e.g. `psql "$DATABASE_URL" -c` |
 
-A channel is read-only unless the recipe says otherwise. Reversals run through the API's own inverse
-operation wherever one exists; raw SQL is a last resort for when the API offers none.
+`writable` defaults to false, meaning the channel reads and nothing more. Reversals run through the API's
+own inverse operation wherever one exists. Set `writable: true` only for a repo where some mutation has no
+API inverse and the reversal genuinely has to be SQL; the skill refuses to write through a channel that
+has not said so.
 
 Prefer `command` when the repo has a working CLI, since it does not assume a particular MCP server is
 installed. Omit `data_access` entirely for a repo with no database; the skill then verifies through the

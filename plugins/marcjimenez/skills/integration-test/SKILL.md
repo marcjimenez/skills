@@ -97,8 +97,8 @@ not deleted first. Then **re-query** to show each row is gone, or restored to it
 reversal that undid an update. A zero exit code is not proof.
 
 A reversal runs through the same surface as the action: the API's own inverse operation wherever one
-exists. Raw SQL is a last resort, used only when the recipe declares a write-capable `data_access` channel
-and the API offers no inverse.
+exists. Raw SQL is a last resort, used only when `data_access.writable` is true and the API offers no
+inverse. Against a channel that has not declared itself writable, stop and ask rather than writing.
 
 If a reversal fails, attempt the remaining ones so no further rows are stranded, then stop. Report the rows
 still standing, the reversal that failed, and its error. Do not persist the recipe, do not report a green
