@@ -13,15 +13,20 @@ All configuration and artifacts are stored in a cross-platform directory outside
 
 ## Skills Reference
 
-### Orchestrators (User-Invoked)
+### Orchestrators
 
-| Command | Purpose |
-|---------|---------|
-| `/marcjimenez:plan` | Produces research-backed implementation plans with concrete code examples and task breakdowns |
-| `/marcjimenez:brainstorm` | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
-| `/marcjimenez:implement` | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
-| `/marcjimenez:implement-beta` | Opt-in trial of the build cycle with a required end-to-end verification phase before code review; invoke by name, never auto-triggered |
-| `/marcjimenez:setup` | Configures external connections, API keys, code review depth, VCS settings, and default preferences |
+`brainstorm` and `setup` are entry points: nothing hands off to them, so they carry
+`disable-model-invocation` and run only when you type them. `implement-beta` carries it for a different
+reason: it would otherwise compete with `implement` for the same triggers. `plan` and `implement` are
+chained into after you approve the step before, so they must stay model-invokable or the handoff errors.
+
+| Command | Invocation | Purpose |
+|---------|-----------|---------|
+| `/marcjimenez:plan` | auto | Produces research-backed implementation plans with concrete code examples and task breakdowns |
+| `/marcjimenez:brainstorm` | user only | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
+| `/marcjimenez:implement` | auto | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
+| `/marcjimenez:implement-beta` | user only | Opt-in trial of the build cycle with a required end-to-end verification phase before code review |
+| `/marcjimenez:setup` | user only | Configures external connections, API keys, code review depth, VCS settings, and default preferences |
 
 ### Primitives (Auto-Invoked)
 
