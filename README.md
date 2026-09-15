@@ -20,6 +20,7 @@ All configuration and artifacts are stored in a cross-platform directory outside
 | `/marcjimenez:plan` | Produces research-backed implementation plans with concrete code examples and task breakdowns |
 | `/marcjimenez:brainstorm` | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
 | `/marcjimenez:implement` | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
+| `/marcjimenez:implement-beta` | Opt-in trial of the build cycle with a required end-to-end verification phase before code review (see Beta below) |
 | `/marcjimenez:setup` | Configures external connections, API keys, code review depth, VCS settings, and default preferences |
 
 ### Primitives (Auto-Invoked)
@@ -32,6 +33,7 @@ All configuration and artifacts are stored in a cross-platform directory outside
 | `marcjimenez:reuse` | Before writing new functions, helpers, or adding dependencies; enforces the Climb-the-Ladder reuse doctrine |
 | `marcjimenez:coding-style` | Before writing or editing non-trivial code; enforces ponytail minimalism and root-cause bug fixes |
 | `marcjimenez:writing-for-agents` | When creating SKILL.md, CLAUDE.md, or other agent-facing documentation |
+| `marcjimenez:integration-test` | After unit tests and lint are green, before code review; starts the services, fetches a token, runs the real calls, inspects the database rows, then undoes them and proves the undo |
 | `marcjimenez:code-review` | After completing implementation, before git push or PR creation; triages the diff to a relevant reviewer subset plus a mandatory best-practices audit |
 | `marcjimenez:resolve-code-review` | After a PR has review comments; fetches every thread, states a take, resolves the self-explanatory ones autonomously, and batches the rest into a single Q&A session |
 | `marcjimenez:unslop` | Whenever writing or editing prose or non-trivial code; removes AI-slop tells by density and rewrites to plain natural language, rejecting both slop and clipped over-correction |
@@ -39,6 +41,8 @@ All configuration and artifacts are stored in a cross-platform directory outside
 | `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions and drafts the body in its idiom |
 
 The `implement` orchestrator hard-gates code review before any push, ensuring all changes undergo adversarial audit before leaving your local machine.
+
+`implement-beta` is a time-boxed trial of that same cycle with an added end-to-end phase, and it never auto-triggers: invoke it by name. Promotion over `implement` is gated on three green runs across two or more repos, one prod run whose cleanup was proven by re-query, one discovery run that derived a working recipe unaided, and one waiver run on a diff with no runtime surface.
 
 ## Architecture
 
@@ -65,6 +69,14 @@ flowchart TD
     CR --> TRI[triage: relevant reviewers only]
     CR -->|mandatory| BP
     TRI --> REV[adversarial review panel]
+    U -->|invoke by name| IMB[/marcjimenez:implement-beta/]
+    IMB --> TT
+    IMB --> CS
+    IMB -->|required, waiver recorded| IT[marcjimenez:integration-test]
+    IT --> ITD[discover recipe or load config]
+    IT --> ITR[run scenarios, inspect DB, undo, re-query]
+    IMB -->|mandatory gate| CR
+    U -->|invoke| IT
     U -->|invoke| RCR[/marcjimenez:resolve-code-review/]
     RCR --> RCRF[fetch PR review threads]
     RCRF --> RCRT[take + two-bucket gate]
@@ -104,7 +116,7 @@ Enable per-project in `.claude/settings.json`:
 
 ### 3. Verify Installation
 
-Run `/skills` in Claude Code and verify that 15 `marcjimenez:*` skills appear in the list.
+Run `/skills` in Claude Code and verify that 17 `marcjimenez:*` skills appear in the list.
 
 ## Configuration
 
@@ -126,7 +138,8 @@ Configuration and artifacts are stored in a cross-platform directory structure o
 │           └── <feature-slug>/
 │               ├── research.md  # Research findings
 │               ├── plan.md      # Implementation plan
-│               └── todo.md      # Task tracking file
+│               ├── todo.md      # Task tracking file
+│               └── integration.md  # End-to-end run evidence and cleanup proof
 └── secrets.env                  # API keys (chmod 600, never committed)
 ```
 
@@ -158,7 +171,7 @@ Validate the plugin structure (manifests, frontmatter, skill references):
 bash scripts/validate.sh
 ```
 
-This checks that manifests parse correctly, all 15 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
+This checks that manifests parse correctly, all 17 skills have valid frontmatter, all `/marcjimenez:*` references resolve, and there are no stale references.
 
 ## Plugin Structure
 
@@ -186,6 +199,9 @@ The `resolve-code-review` skill works through the review comments on an existing
 
 ### Anti-Slop Writing
 The `unslop` primitive removes the tells that mark prose and code as machine-generated, and it runs on essentially all writing. It flags by density rather than on single words, rewrites to plain natural language, and rejects both AI-slop and the clipped over-correction that reads as caveman prose. It never claims to detect authorship and never gates on a score. `resolve-code-review` runs its rebuttals and Q&A questions through it, so all reviewer- and user-facing prose reads as plain standard English.
+
+### End-to-End Verification
+The `integration-test` skill proves a feature works rather than merely compiles. It learns each repo's run recipe once (how to start the services, how to fetch a token, how to reach the database) and reuses it, deriving one from the repo's own files when none exists. It asks which environment to target on every run, writes each mutation's reversal down before issuing it, and proves cleanup by re-querying rather than trusting an exit code.
 
 ### Hard Gates
 Critical quality checks (requirements clarity, code review) are mandatory gates that cannot be bypassed. Code review runs on the local diff and must pass before any git push or PR creation.
