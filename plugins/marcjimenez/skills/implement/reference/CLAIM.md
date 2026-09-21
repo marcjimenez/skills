@@ -36,6 +36,11 @@ REF="${PREFIX}${N}"              # e.g. refs/claims/issue-42
 REF_PATH="${REF#refs/}"          # e.g. claims/issue-42, the form the GET and DELETE take
 ```
 
+**Re-bind this block at the top of every step.** Each tool call runs in its own shell, so nothing set here
+survives into the next one. A release step that assumes `$REF_PATH` is still set deletes
+`/git/refs/` with an empty tail and silently does nothing, leaving the lock held for the full TTL. Every
+block below repeats the binding for that reason; the repetition is load-bearing, not sloppy.
+
 ### 1. Idempotency gate
 
 One GraphQL call, cost 1 whether you ask for four fields or twelve.
@@ -60,6 +65,8 @@ This is advisory. It saves a wasted claim attempt; it does not decide anything.
 ### 2. Take the lock
 
 ```bash
+PREFIX="refs/claims/issue-"; REF="${PREFIX}${N}"               # ← re-bound: new shell
+
 # Parentless commit on git's well-known empty tree, so the lock carries a holder and a
 # timestamp without touching history. Pattern from suzuki-shunsuke/lock-action.
 COMMIT=$(gh api -X POST "/repos/$OWNER/$REPO/git/commits" \
@@ -82,6 +89,8 @@ Only the winner reaches this, so ordinary non-atomic writes are safe now. Use `g
 `gh issue edit`, which costs three round trips for labels and read-modify-writes assignees.
 
 ```bash
+IN_PROGRESS="agent-in-progress"                                # ← re-bound: new shell
+
 gh api -X POST "/repos/$OWNER/$REPO/issues/$N/labels" -f "labels[]=$IN_PROGRESS"
 gh api -X POST "/repos/$OWNER/$REPO/issues/$N/assignees" -f "assignees[]=$GH_LOGIN"
 ```
@@ -89,6 +98,9 @@ gh api -X POST "/repos/$OWNER/$REPO/issues/$N/assignees" -f "assignees[]=$GH_LOG
 ### 4. Release, as an explicit step
 
 ```bash
+PREFIX="refs/claims/issue-"; IN_PROGRESS="agent-in-progress"   # ← re-bound: new shell
+REF_PATH="${PREFIX#refs/}${N}"
+
 gh api -X DELETE "/repos/$OWNER/$REPO/git/refs/$REF_PATH"
 gh api -X DELETE "/repos/$OWNER/$REPO/issues/$N/labels/$IN_PROGRESS"
 ```
@@ -107,6 +119,8 @@ Only on the 422 path, and only when `claim_ttl_hours` is non-zero. Read the hold
 the ref points at:
 
 ```bash
+PREFIX="refs/claims/issue-"; REF_PATH="${PREFIX#refs/}${N}"    # ← re-bound: new shell
+
 gh api "/repos/$OWNER/$REPO/git/commits/$(gh api "/repos/$OWNER/$REPO/git/ref/$REF_PATH" --jq .object.sha)" \
   --jq '{holder: .message, claimed_at: .committer.date}'
 ```

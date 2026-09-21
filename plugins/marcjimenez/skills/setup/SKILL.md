@@ -101,7 +101,7 @@ Shape: `/marcjimenez:integration-test` `reference/RECIPE-SCHEMA.md`.
 `/marcjimenez:issue` applies a ready label to tickets that pass its readiness gate, and
 `/marcjimenez:implement` claims a ticket before working it. Both read `agent_handoff`, and both work on the
 defaults, which match labels that already exist in the user's repos. Offer this section only to rename a
-label, change `claim_ttl_hours`, or adjust `required_sections`. Field detail:
+label or change `claim_ttl_hours`. Field detail:
 `/marcjimenez:setup` `reference/CONFIG-SCHEMA.md`.
 
 ## 8. Target + write

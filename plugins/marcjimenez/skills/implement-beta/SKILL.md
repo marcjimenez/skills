@@ -24,8 +24,9 @@ branches existing. This runs first for that reason: a branch created and then ab
 claim was lost is wasted work and a confusing artifact.
 
 GATE — `/marcjimenez:implement` and a parallel workspace can reach the same ticket seconds apart. Follow
-`/marcjimenez:implement` `reference/CLAIM.md`: an idempotency read, then `POST /git/refs` on `refs/claims/issue-$N`, which is the
-only GitHub primitive with a real compare-and-swap. A 422 means another agent holds it: stop, say so, and
+`/marcjimenez:implement` `reference/CLAIM.md`: an idempotency read, then `POST /git/refs` on `${claim_ref_prefix}${N}`, which is
+the only GitHub primitive with a real compare-and-swap. Build the ref from config, never from the literal
+default: the ref name is the lock identity, so a worker using a different value excludes nobody. A 422 means another agent holds it: stop, say so, and
 exit. Losing a claim is a normal outcome.
 
 Once the ref is yours, publish it with `in_progress_label` and an assignee so the issue shows it is taken.

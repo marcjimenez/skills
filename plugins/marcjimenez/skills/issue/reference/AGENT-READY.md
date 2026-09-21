@@ -16,7 +16,7 @@ fails; a short one that does, passes.
 
 ## Required sections
 
-Defaults for `agent_handoff.required_sections`. The first three are what the repo's own
+The first three are what the repo's own
 `ready-for-agent` tickets already use; `Files` is the addition the evidence argues for.
 
 | Section | Holds | Why it is required |
@@ -38,30 +38,31 @@ things it has to get right, each of which a naive grep gets wrong:
   satisfy the gate if someone pasted it into a ticket verbatim.
 - `## Filesystem changes` is not a `Files` section, so the heading text is anchored at both ends.
 - Acceptance criteria are often nested under a parent bullet, so the checkbox match allows indentation.
+- A checkbox belongs to the section it sits in. Scanning the whole body lets a checkbox under `Files` pass
+  a prose-only `Acceptance criteria`.
 
 ```bash
 # Fenced blocks are examples. Drop them before looking for sections.
 BODY="$(awk '/^```/{f=!f; next} !f' "$BODY_FILE")"
 
-# A section counts only when its heading is followed by a non-blank, non-heading line.
-section_filled() {
+# Print the lines under the first heading matching $1, stopping at the next heading.
+section_body() {
   printf '%s\n' "$BODY" | awk -v pat="$1" '
     tolower($0) ~ /^#+[ \t]/ { inside = (tolower($0) ~ pat); next }
-    inside && NF          { found = 1 }
-    END                   { exit found ? 0 : 1 }'
+    inside                   { print }'
 }
+filled() { section_body "$1" | grep -q '[^[:space:]]'; }
+
+AC='^#+[ \t]+acceptance criteria[ \t]*$'
 
 missing=()
-section_filled '^#+[ \t]+(what to build|what to do)[ \t]*$'   || missing+=("What to build")
-section_filled '^#+[ \t]+acceptance criteria[ \t]*$'          || missing+=("Acceptance criteria")
-printf '%s\n' "$BODY" | grep -qE '^[[:space:]]*- \[[ x]\] '  || missing+=("Acceptance criteria: at least one checkbox")
-section_filled '^#+[ \t]+files[ \t]*$'                        || missing+=("Files")
-section_filled '^#+[ \t]+(blocked by|not blocking)[ \t]*$'    || missing+=("Blocked by, or Not blocking: none")
+filled '^#+[ \t]+(what to build|what to do)[ \t]*$'  || missing+=("What to build")
+filled "$AC"                                          || missing+=("Acceptance criteria")
+section_body "$AC" | grep -qE '^[[:space:]]*- \[[ xX]\] ' \
+                                                      || missing+=("Acceptance criteria: at least one checkbox")
+filled '^#+[ \t]+files[ \t]*$'                       || missing+=("Files")
+filled '^#+[ \t]+(blocked by|not blocking)[ \t]*$'   || missing+=("Blocked by, or Not blocking: none")
 ```
-
-`required_sections` in config names which sections a repo expects, but the checks above are written out
-rather than generated from it. Changing the list means editing this block; there is no indirection today,
-and pretending otherwise would be worse than saying so.
 
 Empty `missing` means apply `ready_label`. Otherwise file without it, apply `needs_info_label` if the repo
 has one, and report the list so the user can decide whether to fill the gaps or leave it as a human ticket.
@@ -105,17 +106,25 @@ Read from `agent_handoff`. Defaults match labels that already exist in `trykudos
 | `ai-generated` | the body was drafted by an agent, which is every ticket this skill files |
 | `needs-info` | the gate failed, if the repo has the label |
 
-A repo may not have them. `gh` will not create a label implicitly, so offer the exact commands rather than
-letting the create fail:
+A repo may not have them, and `gh` will not create a label implicitly. Bind the configured names rather
+than the defaults, and offer a create command for every one of them, including `needs_info_label`, which
+is precisely the label the failing path needs:
 
 ```bash
-gh label create ready-for-agent --repo "$REPO" --color 0E8A16 \
+READY="ready-for-agent"        # ← agent_handoff.ready_label
+IN_PROGRESS="agent-in-progress" # ← agent_handoff.in_progress_label
+AI="ai-generated"              # ← agent_handoff.ai_label
+NEEDS_INFO="needs-info"        # ← agent_handoff.needs_info_label
+
+gh label create "$READY"       --repo "$REPO" --color 0E8A16 \
   --description "Fully specified and ready for an implementation agent"
-gh label create agent-in-progress --repo "$REPO" --color FBCA04 \
+gh label create "$IN_PROGRESS" --repo "$REPO" --color FBCA04 \
   --description "An agent currently holds this issue"
-gh label create ai-generated --repo "$REPO" --color c5def5 \
+gh label create "$AI"          --repo "$REPO" --color c5def5 \
   --description "Issue created by AI agent"
+gh label create "$NEEDS_INFO"  --repo "$REPO" --color FBCA04 \
+  --description "Waiting on the reporter for more information"
 ```
 
-`agent-in-progress` is applied by `/marcjimenez:implement`, not here, but it is created alongside the
-others so the handoff does not stall later on a missing label.
+`$IN_PROGRESS` is applied by `/marcjimenez:implement`, not here, but it is created alongside the others so
+the handoff does not stall later on a missing label.

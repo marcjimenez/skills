@@ -135,11 +135,14 @@ rather than inside one skill.
 | `needs_info_label` | string | applied when the gate refuses (default `needs-info`) |
 | `claim_ref_prefix` | string | git ref namespace for the claim lock (default `refs/claims/issue-`) |
 | `claim_ttl_hours` | number | age past which a claim may be reclaimed; `0` disables reclaim (default `8`) |
-| `required_sections` | string[] | headings a ticket must carry to qualify |
 
 `claim_ref_prefix` is the lock's identity. Two workers using different prefixes for the same issue hold two
 different locks and exclude nothing, so every reader of this section must use the same value. Change it per
 repo only if the default collides with something.
+
+Which headings a ticket must carry is not configurable. The list lives in `/marcjimenez:issue`
+`reference/AGENT-READY.md`, because the gate is written out rather than generated, and exposing a field
+the gate never reads would let someone save a setting that does nothing.
 
 The label defaults are not invented: `ready-for-agent`, `ai-generated` and `needs-info` already exist in
 `trykudos/api` with these meanings. Where a repo lacks them, `/marcjimenez:issue` offers the
