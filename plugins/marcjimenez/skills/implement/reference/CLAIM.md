@@ -26,7 +26,15 @@ So: **the ref is the lock, the label is how the claim becomes visible.**
 
 ## The protocol
 
-Read `agent_handoff` for `claim_ref_prefix`, `in_progress_label` and `claim_ttl_hours`.
+Read `agent_handoff` first and bind its values, because the ref name IS the lock identity. Two workers
+using different prefixes on one issue hold two unrelated locks and exclude nothing.
+
+```bash
+PREFIX="refs/claims/issue-"      # ← agent_handoff.claim_ref_prefix
+IN_PROGRESS="agent-in-progress"  # ← agent_handoff.in_progress_label
+REF="${PREFIX}${N}"              # e.g. refs/claims/issue-42
+REF_PATH="${REF#refs/}"          # e.g. claims/issue-42, the form the GET and DELETE take
+```
 
 ### 1. Idempotency gate
 
@@ -59,7 +67,7 @@ COMMIT=$(gh api -X POST "/repos/$OWNER/$REPO/git/commits" \
   -f tree=4b825dc642cb6eb9a060e54bf8d69288fbee4904 --jq .sha)
 
 gh api -X POST "/repos/$OWNER/$REPO/git/refs" \
-  -f "ref=refs/claims/issue-$N" -f "sha=$COMMIT" >/dev/null 2>&1 \
+  -f "ref=$REF" -f "sha=$COMMIT" >/dev/null 2>&1 \
   || { echo "issue #$N is already claimed; stopping."; exit 0; }
 ```
 
@@ -74,17 +82,24 @@ Only the winner reaches this, so ordinary non-atomic writes are safe now. Use `g
 `gh issue edit`, which costs three round trips for labels and read-modify-writes assignees.
 
 ```bash
-gh api -X POST "/repos/$OWNER/$REPO/issues/$N/labels" -f 'labels[]=agent-in-progress'
+gh api -X POST "/repos/$OWNER/$REPO/issues/$N/labels" -f "labels[]=$IN_PROGRESS"
 gh api -X POST "/repos/$OWNER/$REPO/issues/$N/assignees" -f "assignees[]=$GH_LOGIN"
 ```
 
-### 4. Release on every exit path
+### 4. Release, as an explicit step
 
 ```bash
-trap 'gh api -X DELETE "/repos/'"$OWNER"'/'"$REPO"'/git/refs/claims/issue-'"$N"'" >/dev/null 2>&1' EXIT INT TERM
+gh api -X DELETE "/repos/$OWNER/$REPO/git/refs/$REF_PATH"
+gh api -X DELETE "/repos/$OWNER/$REPO/issues/$N/labels/$IN_PROGRESS"
 ```
 
-Remove `in_progress_label` too once the PR is open, so the issue reads as handed off rather than held.
+Run this once the PR is open, so the issue reads as handed off rather than held.
+
+**Do not reach for a `trap`.** Each tool call runs in its own shell, so a `trap ... EXIT` registered while
+taking the lock fires the moment that one command returns, releasing the claim seconds after acquiring it
+and letting a second agent straight in. The release has to be a step you actually perform, which means a
+crash between claiming and releasing leaves the lock held. That is what the TTL in step 5 is for; it is
+not optional polish.
 
 ### 5. Stale locks
 
@@ -92,7 +107,7 @@ Only on the 422 path, and only when `claim_ttl_hours` is non-zero. Read the hold
 the ref points at:
 
 ```bash
-gh api "/repos/$OWNER/$REPO/git/commits/$(gh api "/repos/$OWNER/$REPO/git/ref/claims/issue-$N" --jq .object.sha)" \
+gh api "/repos/$OWNER/$REPO/git/commits/$(gh api "/repos/$OWNER/$REPO/git/ref/$REF_PATH" --jq .object.sha)" \
   --jq '{holder: .message, claimed_at: .committer.date}'
 ```
 
@@ -107,8 +122,9 @@ deleter can remove the first's fresh claim. Asking makes that rare enough not to
 - **The window between step 1 and step 2**, roughly a second. Another agent can pass its own gate in that
   time. Step 2 still arbitrates, so the cost is a wasted gate check, not a double start.
 - **An agent that never calls this.** The protocol only binds its callers.
-- **Different ref prefixes.** The ref name *is* the lock identity. Two workers using different values for
-  `claim_ref_prefix` on one issue hold two unrelated locks and exclude nothing.
+- **A crash between claiming and releasing.** The lock stays held until the TTL lets someone reclaim it.
+  There is no cleanup hook that survives across tool calls, so this is a real hole rather than a
+  theoretical one, and `claim_ttl_hours` is the only thing that closes it.
 
 Ref reads are eventually consistent even though the create is not, so never let correctness depend on a
 read returning empty. Only the 201 decides.

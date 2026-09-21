@@ -31,14 +31,37 @@ so in the PR rather than forcing the listed paths.
 
 ## The gate
 
+A heading on its own proves nothing, so the check is that each section exists **and has content**. Three
+things it has to get right, each of which a naive grep gets wrong:
+
+- A heading inside a fenced code block is an example, not a section. The template below would otherwise
+  satisfy the gate if someone pasted it into a ticket verbatim.
+- `## Filesystem changes` is not a `Files` section, so the heading text is anchored at both ends.
+- Acceptance criteria are often nested under a parent bullet, so the checkbox match allows indentation.
+
 ```bash
+# Fenced blocks are examples. Drop them before looking for sections.
+BODY="$(awk '/^```/{f=!f; next} !f' "$BODY_FILE")"
+
+# A section counts only when its heading is followed by a non-blank, non-heading line.
+section_filled() {
+  printf '%s\n' "$BODY" | awk -v pat="$1" '
+    tolower($0) ~ /^#+[ \t]/ { inside = (tolower($0) ~ pat); next }
+    inside && NF          { found = 1 }
+    END                   { exit found ? 0 : 1 }'
+}
+
 missing=()
-grep -qiE '^#{1,4} +(What to build|What to do)'  "$BODY_FILE" || missing+=("What to build")
-grep -qiE '^#{1,4} +Acceptance criteria'          "$BODY_FILE" || missing+=("Acceptance criteria")
-grep -qE  '^- \[ \] '                             "$BODY_FILE" || missing+=("Acceptance criteria: at least one checkbox")
-grep -qiE '^#{1,4} +Files'                        "$BODY_FILE" || missing+=("Files")
-grep -qiE '^#{1,4} +(Blocked by|Not blocking)'    "$BODY_FILE" || missing+=("Blocked by, or Not blocking: none")
+section_filled '^#+[ \t]+(what to build|what to do)[ \t]*$'   || missing+=("What to build")
+section_filled '^#+[ \t]+acceptance criteria[ \t]*$'          || missing+=("Acceptance criteria")
+printf '%s\n' "$BODY" | grep -qE '^[[:space:]]*- \[[ x]\] '  || missing+=("Acceptance criteria: at least one checkbox")
+section_filled '^#+[ \t]+files[ \t]*$'                        || missing+=("Files")
+section_filled '^#+[ \t]+(blocked by|not blocking)[ \t]*$'    || missing+=("Blocked by, or Not blocking: none")
 ```
+
+`required_sections` in config names which sections a repo expects, but the checks above are written out
+rather than generated from it. Changing the list means editing this block; there is no indirection today,
+and pretending otherwise would be worse than saying so.
 
 Empty `missing` means apply `ready_label`. Otherwise file without it, apply `needs_info_label` if the repo
 has one, and report the list so the user can decide whether to fill the gaps or leave it as a human ticket.
