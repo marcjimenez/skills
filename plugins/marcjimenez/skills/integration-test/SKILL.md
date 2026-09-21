@@ -100,9 +100,10 @@ A reversal runs through the same surface as the action: the API's own inverse op
 exists. Raw SQL is a last resort, used only when `data_access.writable` is true and the API offers no
 inverse. Against a channel that has not declared itself writable, stop and ask rather than writing.
 
-If a reversal fails, attempt the remaining ones so no further rows are stranded, then stop. Report the rows
-still standing, the reversal that failed, and its error. Do not persist the recipe, do not report a green
-run, and do not hand control back to the caller as passing. A standing mutation is an open incident.
+If a reversal fails, attempt the remaining ones so no further rows are stranded, then stop. Append
+`Result: failed` to the evidence file with the rows still standing, the reversal that failed, and its
+error. Do not persist the recipe and do not hand control back to the caller as passing. A standing
+mutation is an open incident.
 
 ## Phase 7 — Tear down and persist
 
@@ -111,8 +112,24 @@ environment, each scenario with its action, response, before and after rows, and
 only, because the reversals written during Phase 5 are the crash record and stay in the file verbatim.
 Redact credentials from anything captured: `Authorization: Bearer <redacted>`, never the value.
 
-If the recipe came from discovery and the run went green, offer to persist it to
-`$CONFIG_HOME/repos/$REPO_KEY/config.json` so the next run skips discovery. Ask first.
+End the summary with a verdict line of its own, `Result: green` or `Result: failed`, at the start of a
+line. Callers gate on it rather than on your say-so:
+
+```bash
+grep '^Result:' "$RUN_DIR/integration.md" | tail -1 | tr -d '\r' | sed 's/[[:space:]]*$//'
+```
+
+`Result: green` stands alone: no reason, no trailing text. Only `Result: failed` carries a reason after
+it, so a caller comparing against the bare string is never tripped by one.
+
+Write `Result: green` only when all four criteria below hold. Everything else is `Result: failed` with the
+reason, including a run you abandoned partway. A missing file means the run never happened, which is a
+different and equally reportable thing.
+
+If the recipe came from discovery and the verdict is green, persist it to
+`$CONFIG_HOME/repos/$REPO_KEY/config.json` so the next run skips discovery: show the block, get a yes,
+then merge it into any config already there rather than overwriting the file. A recipe is never saved
+against a failed or abandoned run.
 
 ## The run is green when
 
@@ -122,7 +139,8 @@ If the recipe came from discovery and the run went green, offer to persist it to
 - `$RUN_DIR/integration.md` holds every scenario with its before rows, after rows, and cleanup proof, and
   no credential values.
 
-Anything short of all four is not green, whatever else passed.
+Anything short of all four is not green, whatever else passed. Record the verdict either way: a caller
+that finds no `Result:` line treats the run as not having happened.
 
 ## Inviolable rules
 
