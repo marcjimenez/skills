@@ -48,9 +48,11 @@ anything where a wrong assumption ships a wrong change. Batch these into one ses
 
 ## Rebuttal craft (invalid comments)
 
-Run every rebuttal through `/marcjimenez:unslop` before posting. The craft:
+Run every rebuttal through `/marcjimenez:unslop` before posting. Keep it to one to three plain sentences
+and never sign it as Claude; both rules are in `SKILL.md` §4. The craft:
 
-- Acknowledge, then counter. Never a bare "no". Explain why you chose the approach and name the tradeoff.
+- Acknowledge the point in a clause, then counter. Never a bare "no", and never a sentence of thanks
+  either. "Fair, though `items` is already guarded on line 40" does the acknowledging in four words.
 - Lead with evidence: a benchmark, a spec or doc link, a passing or failing test, a named principle. A
   cited rebuttal is near-unarguable; an assertion invites a volley.
 - If the reviewer misread the code, prefer fixing the code over winning the argument. A misread is often
