@@ -43,7 +43,7 @@ chained into after you approve the step before, so they must stay model-invokabl
 | `marcjimenez:resolve-code-review` | After a PR has review comments; fetches every thread, states a take, resolves the self-explanatory ones autonomously, and batches the rest into a single Q&A session |
 | `marcjimenez:unslop` | Whenever writing or editing prose or non-trivial code; removes AI-slop tells by density and rewrites to plain natural language, rejecting both slop and clipped over-correction |
 | `marcjimenez:task-tracking` | When starting multi-step work; maintains durable task file with verifiable completion criteria |
-| `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions and drafts the body in its idiom |
+| `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions, drafts the body in its idiom, and applies the ready label when the ticket passes the agent-readiness gate |
 
 The `implement` orchestrator hard-gates code review before any push, ensuring all changes undergo adversarial audit before leaving your local machine.
 
@@ -207,6 +207,11 @@ The `unslop` primitive removes the tells that mark prose and code as machine-gen
 
 ### End-to-End Verification
 The `integration-test` skill proves a feature works rather than merely compiles. It learns each repo's run recipe once (how to start the services, how to fetch a token, how to reach the database) and reuses it, deriving one from the repo's own files when none exists. It asks which environment to target on every run, writes each mutation's reversal down before issuing it, and proves cleanup by re-querying rather than trusting an exit code.
+
+### Agent-Ready Tickets and the Claim
+The `issue` primitive checks a drafted ticket for the sections an agent needs to build from it unaided: what to build, checkbox acceptance criteria, the files the change should touch, and dependency state. A ticket that passes gets the repo's ready label; one that fails is still filed, without it, and the skill names what is missing rather than inventing it. The bar is specific rather than high, because the evidence says shorter and tightly scoped issues with explicit file pointers are what predict a merged agentic PR.
+
+Before `implement` builds a ticket it claims it, so two parallel workspaces cannot both start the same work. The lock is a git ref, not a label: GitHub offers no compare-and-swap on an issue, and concurrent label writes all return success while emitting duplicate events, whereas `POST /git/refs` returns exactly one success and rejects the rest. The label still goes on, as the visible signal that the ticket is taken.
 
 ### Hard Gates
 Critical quality checks (requirements clarity, code review) are mandatory gates that cannot be bypassed. Code review runs on the local diff and must pass before any git push or PR creation.

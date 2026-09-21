@@ -110,6 +110,26 @@ Show the user, in one message:
 
 Then ask once, offering: file it, edit something first, or discard. Only proceed on an explicit yes.
 
+## 4.5 Check whether it is agent-ready
+
+Run the section gate from `reference/AGENT-READY.md` against the drafted body. It decides one thing: does
+this ticket get the ready label. It never blocks filing, because a ticket that fails is still a perfectly
+good human ticket.
+
+Passing means the ticket carries `What to build`, `Acceptance criteria` with at least one checkbox,
+`Files`, and a dependency section. Report the outcome as part of the step 4 confirmation, so the user
+approves the label along with everything else:
+
+> Agent-ready: yes. Filing with `ready-for-agent`.
+
+or
+
+> Agent-ready: no, missing **Files** and **Acceptance criteria**. Filing without `ready-for-agent`.
+> Add those two sections and it qualifies.
+
+Never invent the missing sections to get a ticket over the bar. A ticket that passes on invented
+acceptance criteria is worse than one that honestly fails, because an agent will build to them.
+
 ## 5. Create
 
 ```bash
@@ -123,6 +143,11 @@ gh issue create --repo "$REPO" \
 
 Repeat `--label` and `--assignee` per value. Omit `--project` entirely when there is none; an empty string
 is an error. The command prints the created URL to stdout — capture it.
+
+Add the handoff labels from `agent_handoff` to that list: `ai_label` always, since this skill drafted the
+body, and `ready_label` when §4.5 passed. `gh` will not create a label that does not exist, so when the
+repo lacks one, print the `gh label create` command from `reference/AGENT-READY.md` and let the user run
+it rather than dropping the label silently.
 
 ## 6. Verify, then report
 

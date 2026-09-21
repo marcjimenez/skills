@@ -96,7 +96,15 @@ files and offers to persist it after a green run. Offer to set `integration_test
 wants to pre-seed a recipe or change which environment is pre-selected (`default_env`, most often `prod`).
 Shape: `/marcjimenez:integration-test` `reference/RECIPE-SCHEMA.md`.
 
-## 7. Target + write
+## 7. Agent handoff (optional)
+
+`/marcjimenez:issue` applies a ready label to tickets that pass its readiness gate, and
+`/marcjimenez:implement` claims a ticket before working it. Both read `agent_handoff`, and both work on the
+defaults, which match labels that already exist in the user's repos. Offer this section only to rename a
+label or change `claim_ttl_hours`. Field detail:
+`/marcjimenez:setup` `reference/CONFIG-SCHEMA.md`.
+
+## 8. Target + write
 
 Ask **global** (`$CONFIG_HOME/global/config.json`, every repo) vs **per-repo**
 (`$CONFIG_HOME/repos/$REPO_KEY/config.json`, this repo only — wins over global). `mkdir -p` the parent, write
