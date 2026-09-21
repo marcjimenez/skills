@@ -5,7 +5,8 @@ description: >-
   autonomously handles the self-explanatory ones (fix and reply and resolve, or rebut a false-positive and
   resolve), and batches the ones that need a product/context assumption into a single Q&A session with the
   user. Valid comments needing real code changes are queued as atomic tasks and chained into planning and
-  implementation. Every reply and every question is run through unslop first. Use PROACTIVELY when the user
+  implementation. Every reply and question is run through unslop first: short, plain, and never signed as
+  Claude. Use PROACTIVELY when the user
   says "address the review", "resolve the PR comments", "handle the review feedback", "respond to Copilot /
   CodeRabbit", or after a reviewer leaves comments. HARD GATE: never posts, resolves, or pushes without
   passing the rules below.
@@ -87,13 +88,28 @@ behavior-changing suggestion). Collect ALL such comments and run ONE Q&A session
 - Batch them. Never drip-feed one prompt per comment.
 - Then act on the answers: fix-and-resolve, rebut-and-resolve, or enqueue.
 
-## 4. unslop every outward and user-facing word
+## 4. Write every outward word like a person
 
-Run every rebuttal reply AND every Q&A question through `/marcjimenez:unslop` before it is shown or posted.
-The user is probed in plain standard English: no "Great question", no filler openers, no hedging clusters,
-no em-dashes, no bold-label fragments. Rebuttal craft (acknowledge then counter, lead with evidence, fix
-the code if the reviewer misread it, separate preference from correctness, never a bare "no", comment on
-the code not the person) is in `reference/VALIDITY-RUBRIC.md`.
+Run every reply AND every Q&A question through `/marcjimenez:unslop` before it is shown or posted. Two
+things matter more here than anywhere else, because these words are public and permanent.
+
+**Never sign as Claude.** No `Co-Authored-By: Claude`, no "Generated with Claude Code", no "as an AI", no
+bot branding, in a reply, a commit, or a PR body. The account is the user's and so is the writing. The
+full rule lives in `/marcjimenez:unslop`.
+
+**Keep it short and plain.** A reply is one to three sentences. Say what changed or why you disagree,
+then stop. Use the words a colleague would say out loud, not the ones a static analyser prints. No
+thanking, no preamble, no restating the comment back at the reviewer, no closing pleasantry.
+
+| instead of | write |
+|---|---|
+| Thank you for the thorough feedback, great catch! I have refactored the implementation accordingly. | Fixed in `a1b2c3d`. |
+| This introduces a potential null-dereference under the empty-collection invariant. | This crashes when the list is empty. Guard added. |
+| While I appreciate the suggestion, I must respectfully disagree, as the current implementation already handles this case correctly. | Already handled: `items` is checked on line 40 before the loop. |
+| I have implemented the requested changes as per your recommendation and the tests are now passing. | Done in `a1b2c3d`, `test_empty_batch` covers it. |
+
+Rebuttal craft (lead with evidence, fix the code if the reviewer misread it, separate preference from
+correctness, never a bare "no", comment on the code not the person) is in `reference/VALIDITY-RUBRIC.md`.
 
 ## 5. Queue the valid code-change comments
 
@@ -121,11 +137,14 @@ small queue of mechanical fixes, skip planning and fix directly in the build loo
 1. **Never invent a product decision.** If validity or the fix needs an assumption, it goes to Q&A, not to
    autonomous action.
 2. **Print before you post.** Public rebuttal replies are irreversible; show the exact text first.
-3. **unslop everything outward-facing.** Rebuttals and questions both.
-4. **Auto-reply to bots, be careful with humans.** Bot comments (Copilot, CodeRabbit) are advisory and
+3. **unslop everything outward-facing.** Replies and questions both. One to three sentences, plain
+   words, no thanks and no preamble.
+4. **Never sign as Claude.** No co-author trailer, no generated-by line, no AI framing, in any reply,
+   commit, or PR body. A machine signature in a commit trailer outlives every later edit.
+5. **Auto-reply to bots, be careful with humans.** Bot comments (Copilot, CodeRabbit) are advisory and
    non-blocking by construction, so a clear rebuttal to a bot is safe to post autonomously. A rebuttal to a
    human, even a self-explanatory one, is still printed first.
-5. **Resolve only what is addressed.** Resolve a thread after the fix lands or the rebuttal is posted, not
+6. **Resolve only what is addressed.** Resolve a thread after the fix lands or the rebuttal is posted, not
    before. Resolution is reversible if you get it wrong.
-6. **Don't expand the PR.** Out-of-scope but valid comments get a follow-up issue (`/marcjimenez:issue`)
+7. **Don't expand the PR.** Out-of-scope but valid comments get a follow-up issue (`/marcjimenez:issue`)
    and a decline, not scope creep.

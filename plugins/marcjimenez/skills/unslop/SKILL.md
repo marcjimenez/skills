@@ -96,6 +96,17 @@ catalog those two lack and the concrete rewrite moves. Follow them; do not resta
 - Fix `as any` / `# type: ignore` escape hatches by typing correctly; verify hallucinated or stale imports
   resolve.
 
+## Attribution: the text is the user's, always
+
+Never sign work as a model. No `Co-Authored-By: Claude`, no "Generated with Claude Code", no "as an AI",
+no Anthropic or Claude branding, in a commit message, a PR or issue body, a review reply, or a Slack
+message. Strip any that a template or habit put there.
+
+This is the strongest tell there is, and it is not a style preference. The account is the user's, the
+work ships under their name, and a machine signature in a commit trailer outlives every other edit you
+make. Where a repo or host genuinely requires an attribution trailer, that is the user's call to make
+explicitly, not a default to add.
+
 ## Guardrails
 
 - Meaning is preserved. A rewrite that drops a fact, a caveat, or a number is a failed rewrite.
