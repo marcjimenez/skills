@@ -11,7 +11,7 @@
 - [x] {task} — {exact check that passed}
 
 ## End-to-end verification
-Environment: {prod | dev}
+Environment: {prod | dev}   ·   Verdict: {the `Result:` line from runs/<slug>/integration.md}
 - [x] {scenario} — {what the response and the database rows showed}
 - [x] Every mutation undone, proven by re-query
 

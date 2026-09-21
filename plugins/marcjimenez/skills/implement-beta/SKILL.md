@@ -41,12 +41,16 @@ Invoke `/marcjimenez:task-tracking` to create (or adopt the plan's Task seed int
 `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/todo.md`. Reuse the plan's `<slug>` if a plan exists (so it finds
 the same `runs/<slug>/` dir); otherwise derive `<slug>` per `/marcjimenez:task-tracking`.
 
-Add two boxes to the Ship section that the stable skill does not carry:
+Add two boxes to the Ship section that the stable skill does not carry. Both carry a `verify:` naming
+the artifact, because `/marcjimenez:task-tracking` only allows `[x]` once the verify passes, and a box
+with no verify is an opinion:
 
 ```markdown
-- [ ] /marcjimenez:integration-test green (or waiver recorded with reason)
-- [ ] Every mutation undone, proven by re-query
+- [ ] End-to-end run — verify: last `Result:` line in `runs/<slug>/integration.md` is `Result: green`
+- [ ] Cleanup proven — verify: that file shows a re-query per mutation, each row gone or restored
 ```
+
+On a waiver run, both verifies become the waiver line itself, in the task file and the PR body.
 
 GATE: present the task list; get confirmation before coding.
 
@@ -69,24 +73,35 @@ GATE: present the task list; get confirmation before coding.
 Run the quality gauntlet and self-review the local diff — nothing pushed yet. Full checklist + the ponytail
 debt-ledger grep: `reference/PRE-PR-VERIFICATION.md`. Loop until clean; mark verification tasks `[x]`.
 
-## Phase 5 — End-to-end verification
+## Phase 5 — End-to-end verification (hard gate)
 
-Sanity checks are green, so now prove the feature works. Invoke `/marcjimenez:integration-test`. It asks
-which environment to target, runs the plan's Integration scenarios against a real running system, reads
-what landed in the database, undoes every mutation, and proves the undo by re-querying.
+Sanity checks are green, so now prove the feature works. GATE — invoke `/marcjimenez:integration-test`,
+and do NOT begin Phase 6 until the evidence file exists on disk:
 
-This phase is required. It is skipped ONLY by recording a waiver, never silently:
+```bash
+CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
+TOP="$(git rev-parse --show-toplevel)"
+REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+RUN_DIR="$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>"            # same <slug> as Phase 2
+
+verdict="$(grep '^Result:' "$RUN_DIR/integration.md" 2>/dev/null | tail -1 | tr -d '\r' | sed 's/[[:space:]]*$//')"
+[ "$verdict" = "Result: green" ] && echo "Phase 5 green" || echo "Phase 5 NOT green"
+```
+
+That verdict is the proof, not your memory of having invoked the skill. No file means the run never
+happened; `Result: failed` means it ran and did not pass. Both block Phase 6, and neither is fixed by
+ticking a box. If you are about to mark these `[x]` without `Result: green` on disk, stop and run the
+phase. Ticking a box you did not earn is the single failure this phase exists to prevent.
+
+The waiver is the only other exit, and it is narrow. It applies when the diff cannot be exercised at
+runtime at all: docs only, a prompt-ware or config repo, a comment fix. If the diff touches code that
+runs, the waiver does not apply, however awkward the recipe is to work out. "The recipe was hard to work
+out" and "the scenarios were not written" describe the work, not grounds to skip it. Record it as:
 
 > No end-to-end surface: {reason}
 
-Write that line into the task file box and into the PR body. A waiver is legitimate when the diff cannot be
-exercised at runtime: a docs-only change, a prompt-ware or config repo, a comment fix. It is not
-legitimate because the recipe was hard to work out or the scenarios were not written; in that case go and
-work them out.
-
-Mark both Phase 2 boxes `[x]` here. On a waiver run the cleanup box is satisfied by there having been
-nothing to mutate; note that alongside the waiver reason. A mutation left standing keeps the run open no
-matter what else passed.
+in the task file box and the PR body. A mutation left standing keeps the run open no matter what else
+passed.
 
 ## Phase 6 — Review, THEN PR (hard gate)
 
