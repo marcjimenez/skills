@@ -28,8 +28,10 @@ GATE — `/marcjimenez:implement` and a parallel workspace can reach the same ti
 only GitHub primitive with a real compare-and-swap. A 422 means another agent holds it: stop, say so, and
 exit. Losing a claim is a normal outcome.
 
-Once the ref is yours, publish it with `in_progress_label` and an assignee so the issue shows it is taken,
-and set the release trap. Labels are the visible signal; the ref is the lock.
+Once the ref is yours, publish it with `in_progress_label` and an assignee so the issue shows it is taken.
+Labels are the visible signal; the ref is the lock. Release is an explicit step once the PR is open, not a
+`trap`: each tool call is its own shell, so an EXIT trap would fire the moment the claiming command
+returned and hand the issue straight to the next agent.
 
 ## Phase 1 — Fresh branch
 
