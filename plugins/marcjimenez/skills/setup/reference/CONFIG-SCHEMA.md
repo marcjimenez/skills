@@ -34,7 +34,9 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
     "reviewers": ["copilot"]
   },
 
-  "integration_test": { "default_env": "prod", "environments": { "...": "see /marcjimenez:integration-test reference/RECIPE-SCHEMA.md" } }
+  "integration_test": { "default_env": "prod", "environments": { "...": "see /marcjimenez:integration-test reference/RECIPE-SCHEMA.md" } },
+
+  "agent_handoff": { "ready_label": "ready-for-agent", "in_progress_label": "agent-in-progress", "...": "see /marcjimenez:issue reference/AGENT-READY.md" }
 }
 ```
 
@@ -118,6 +120,30 @@ files when absent and offers to persist it after a green run, so there is nothin
 
 Full field detail: `/marcjimenez:integration-test` `reference/RECIPE-SCHEMA.md`. Credentials follow the
 same rule as everything else here — `auth.env_var` names the variable, the value lives in `secrets.env`.
+
+## `agent_handoff`
+
+Read by `/marcjimenez:issue` (which applies the ready label) and `/marcjimenez:implement` (which claims a
+ticket before working it). Task 2's poller will read the same section, which is why the names live here
+rather than inside one skill.
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `ready_label` | string | applied when a ticket passes the readiness gate (default `ready-for-agent`) |
+| `in_progress_label` | string | applied once a worker holds the claim (default `agent-in-progress`) |
+| `ai_label` | string | marks a ticket an agent drafted (default `ai-generated`) |
+| `needs_info_label` | string | applied when the gate refuses (default `needs-info`) |
+| `claim_ref_prefix` | string | git ref namespace for the claim lock (default `refs/claims/issue-`) |
+| `claim_ttl_hours` | number | age past which a claim may be reclaimed; `0` disables reclaim (default `8`) |
+| `required_sections` | string[] | headings a ticket must carry to qualify |
+
+`claim_ref_prefix` is the lock's identity. Two workers using different prefixes for the same issue hold two
+different locks and exclude nothing, so every reader of this section must use the same value. Change it per
+repo only if the default collides with something.
+
+The label defaults are not invented: `ready-for-agent`, `ai-generated` and `needs-info` already exist in
+`trykudos/api` with these meanings. Where a repo lacks them, `/marcjimenez:issue` offers the
+`gh label create` commands rather than failing.
 
 ## `secrets.env` (API keys)
 

@@ -24,6 +24,19 @@ git checkout -b {prefix}/{slug}   # prefix ∈ vcs.branch_prefixes
 GATE: on a fresh branch off `$BASE` with a clean working tree before proceeding. (In a pre-created workspace
 branch, confirm you're on a non-base feature branch that's clean.)
 
+## Phase 0.5 — Claim the issue
+
+Skip only when the work traces to no issue. Otherwise claim it BEFORE branching, so a second agent finds
+the lock held rather than two branches existing.
+
+GATE — `/marcjimenez:implement` and a parallel workspace can reach the same ticket seconds apart. Follow
+`reference/CLAIM.md`: an idempotency read, then `POST /git/refs` on `refs/claims/issue-$N`, which is the
+only GitHub primitive with a real compare-and-swap. A 422 means another agent holds it: stop, say so, and
+exit. Losing a claim is a normal outcome.
+
+Once the ref is yours, publish it with `in_progress_label` and an assignee so the issue shows it is taken,
+and set the release trap. Labels are the visible signal; the ref is the lock.
+
 ## Phase 1 — Requirements
 
 Invoke `/marcjimenez:requirements` until the spec is unambiguous and confirmed. Skip only if `/marcjimenez:plan` already
@@ -84,10 +97,12 @@ reasons), any known limitations.
 
 1. **Task file is the source of truth** — not your memory. Read it.
 2. **Requirements can't be skipped** — ask, don't guess.
-3. **Review can't be skipped** — especially for "small" changes. `/marcjimenez:code-review` runs on the local diff.
-4. **Review BEFORE push.** Push + PR is the last step, only after review is clean and docs synced.
-5. **Docs ship with code.** Stale docs are a review failure.
-6. **Never commit to the base branch.** Branch + PR always.
-7. **Never stop with unchecked tasks.**
-8. **Fresh base branch first.** Stale branches = conflicts.
-9. **Climb the Ladder before writing code** (`/marcjimenez:reuse`); never cut a guardrail (`/marcjimenez:coding-style`).
+3. **Claim before you build.** A lost claim stops the run. The claim excludes other agents, not
+   humans, so a person can still start the same work unseen.
+4. **Review can't be skipped** — especially for "small" changes. `/marcjimenez:code-review` runs on the local diff.
+5. **Review BEFORE push.** Push + PR is the last step, only after review is clean and docs synced.
+6. **Docs ship with code.** Stale docs are a review failure.
+7. **Never commit to the base branch.** Branch + PR always.
+8. **Never stop with unchecked tasks.**
+9. **Fresh base branch first.** Stale branches = conflicts.
+10. **Climb the Ladder before writing code** (`/marcjimenez:reuse`); never cut a guardrail (`/marcjimenez:coding-style`).

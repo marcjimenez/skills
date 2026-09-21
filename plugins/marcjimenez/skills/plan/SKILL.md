@@ -61,3 +61,13 @@ If the user wants to review first (show / review / details):
 
 If the user declines (no / not yet / later):
   > Plan saved. Run `/marcjimenez:implement` when ready.
+
+Either way, if no issue tracks this work yet, offer one before you finish:
+
+> No ticket tracks this. Draft one from the plan?
+
+On yes, invoke `/marcjimenez:issue`. The plan already carries what an agent-ready ticket needs, so this is
+a handoff rather than fresh drafting: Approach becomes What to build, the Task seed's verifies become
+Acceptance criteria, the files named in Reuse decisions and Code examples become Files, and Constraints
+and non-goals become the scope boundary. A ticket that passes `/marcjimenez:issue`'s readiness gate can be
+picked up later without this session's context.
