@@ -16,7 +16,8 @@ edits a skill, never opens a PR, and never files an issue.
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
 REPORT="$CONFIG_HOME/audits/session-audit.md"
 mkdir -p "$(dirname "$REPORT")"
-./scripts/session-digest.py --hours 24 > /tmp/session-digest.json     # Monday: --hours 72
+"${CLAUDE_PLUGIN_ROOT}"/skills/session-audit/scripts/session-digest.py \
+  --hours 24 > /tmp/session-digest.json                        # Monday: --hours 72
 ```
 
 The transcripts run to gigabytes, so the script does every mechanical count and you read only its output.
@@ -27,10 +28,16 @@ Read `/tmp/session-digest.json`, never the raw JSONL. Field meanings: `reference
 A Bash command string cannot tell authoring a violation from grepping for one, so these come from git:
 
 ```bash
-for r in $(git config --get-regexp '^submodule\.' >/dev/null 2>&1; ls -d ~/conductor/repos/*/ 2>/dev/null); do
-  git -C "$r" log --since='7 days' --grep='Co-Authored-By.*Claude\|Generated with .*Claude' --oneline 2>/dev/null \
-    | sed "s|^|$(basename "$r") |"
-done
+for r in ~/conductor/repos/*/ ~/conductor/workspaces/*/*/; do
+  [ -e "$r/.git" ] || continue
+  # --all, not HEAD: every commit made in a worktree sits on a branch the canonical clone is not on, so
+  # walking HEAD alone reported zero violations across a week that contained 41 commits.
+  # --author: the rule is yours, so a teammate's commit is not your violation. Unscoped, a week of
+  # these repos returns 62 commits and none of them are yours.
+  git -C "$r" log --all --since='7 days' --author="$(git config user.email)" --format='%H %s' -i \
+      --grep='Co-Authored-By.*Claude' --grep='Generated with .*Claude' 2>/dev/null
+# Every worktree of a repo sees the same commits, so report each SHA once.
+done | sort -u -k1,1 | cut -c1-9,41-
 ```
 
 Anything returned is a live CLAUDE.md violation, because that rule is absolute.
@@ -40,9 +47,9 @@ Anything returned is a live CLAUDE.md violation, because that rule is absolute.
 Work the checklist in `reference/SIGNALS.md`. Every finding needs the number behind it and the change it
 implies. Two disciplines carry most of the weight:
 
-- **A count is a prompt, not a verdict.** Read the sampled corrections before calling any of them
-  friction; a pasted alert that opens with "No" is not a correction. Reporting an unread count trains the
-  reader to skip the report.
+- **A count is a prompt, not a verdict.** How to read each one, including which are known to over-match,
+  is in `reference/SIGNALS.md`. Give every correction you report a one-clause judgement, so the entry
+  itself shows it was read.
 - **Silence is a finding too.** A skill that fired zero times over the baseline window is either
   mis-triggered or unnecessary, and saying which is the whole job. Do not report the zero and stop.
 
@@ -64,5 +71,6 @@ saying it is still open, not a restatement.
 
 - [ ] Every signal in `reference/SIGNALS.md` has a line in the entry, including the healthy ones.
 - [ ] Every finding cites its number and names one concrete change.
-- [ ] Every quoted correction was read, not just counted.
-- [ ] The report is appended, nothing else on disk changed, and no issue or PR was opened.
+- [ ] Every correction in the entry carries a one-clause judgement, not just a quote.
+- [ ] `git status --porcelain` in this repo is unchanged from before the run, and no issue or PR exists
+      that did not before.

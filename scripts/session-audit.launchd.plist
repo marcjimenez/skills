@@ -4,14 +4,19 @@
 <dict>
   <key>Label</key><string>dev.marcjimenez.session-audit</string>
 
+  <!-- No shell: a `cd __REPO__ && claude` string breaks silently on a path with a space, and plutil
+       still passes because the XML is fine. WorkingDirectory and an absolute binary avoid both. -->
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/sh</string>
-    <string>-lc</string>
-    <string>cd __REPO__ &amp;&amp; exec claude -p "/marcjimenez:session-audit" --permission-mode acceptEdits</string>
+    <string>__CLAUDE__</string>
+    <string>-p</string>
+    <string>/marcjimenez:session-audit</string>
+    <string>--permission-mode</string>
+    <string>acceptEdits</string>
   </array>
+  <key>WorkingDirectory</key><string>__REPO__</string>
 
-  <!-- Weekdays at 10:07. Not :00, because every scheduled job in the world lands on the hour. -->
+  <!-- Weekdays, staggered off the hour. -->
   <key>StartCalendarInterval</key>
   <array>
     <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>

@@ -184,6 +184,17 @@ bash scripts/validate.sh
 
 This checks that manifests parse correctly, all 17 skills have valid frontmatter, all `/marcjimenez:*` references resolve, there are no stale references, and the `REPO_KEY` derivation is byte-identical in every skill that carries it.
 
+### Weekday session audit
+
+`/marcjimenez:session-audit` reads recent sessions and reports where the skills, CLAUDE.md and the hooks are no longer earning their context. It is report-only: it appends to `$CONFIG_HOME/audits/session-audit.md` and never edits a skill, opens a PR or files an issue. Install it as a launchd agent that runs weekdays at 10:07:
+
+```bash
+./scripts/install-session-audit.sh              # install
+./scripts/install-session-audit.sh uninstall    # remove
+```
+
+launchd rather than a cloud routine, because the audit reads `~/.claude/projects`, which only exists on the machine that wrote it. The Mac has to be awake and logged in; launchd runs a missed job on wake rather than skipping the day.
+
 ### Migrating an older cache
 
 Before the cache was keyed by repository, `REPO_KEY` hashed the checkout path, so every git worktree and every Conductor workspace of the same repo got its own config, its own `integration_test` recipe and its own waivers. This folds them together:

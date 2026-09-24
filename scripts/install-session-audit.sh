@@ -17,9 +17,14 @@ if [ "${1:-install}" = "uninstall" ]; then
   exit 0
 fi
 
-command -v claude >/dev/null || { echo "claude CLI not on PATH" >&2; exit 1; }
+# Resolve the binary now and bake it in. launchd gets no interactive shell, so relying on PATH means
+# the job runs whatever ~/.profile happens to resolve, which is not the build you just validated.
+CLAUDE="$(command -v claude || true)"
+[ -n "$CLAUDE" ] || { echo "claude CLI not on PATH" >&2; exit 1; }
+echo "using $CLAUDE ($("$CLAUDE" --version 2>/dev/null | head -1))"
 mkdir -p "$LOGDIR" "$(dirname "$PLIST")"
-sed -e "s|__REPO__|$PWD|g" -e "s|__LOGDIR__|$LOGDIR|g" scripts/session-audit.launchd.plist > "$PLIST"
+sed -e "s|__REPO__|$PWD|g" -e "s|__LOGDIR__|$LOGDIR|g" -e "s|__CLAUDE__|$CLAUDE|g" \
+  scripts/session-audit.launchd.plist > "$PLIST"
 plutil -lint "$PLIST" >/dev/null
 
 # bootout first so a re-install replaces rather than stacks

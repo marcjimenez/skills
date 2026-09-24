@@ -56,6 +56,20 @@ rests on. Name the session and what it pushed.
 almost entirely `Bash` with a handful of `Edit` calls suggests work being done through the shell that a
 dedicated tool would do more legibly, which is a CLAUDE.md question rather than a skill question.
 
+## Attribution trailers (from git, not the transcripts)
+
+`SKILL.md` §2 asks git directly. Three details there are load-bearing and were each wrong once:
+
+- `--all`, not HEAD. Every commit made in a worktree sits on a branch the canonical clone is not on, so
+  walking HEAD returned zero across a week that held 41 commits.
+- Both `~/conductor/repos` and `~/conductor/workspaces`. The first holds 3 checkouts, the second holds
+  the rest.
+- `--author` scoped to your own email. The rule is yours; a teammate's commit is not your violation.
+  Unscoped, one week of these repos returns 62 commits and not one of them is yours. Reporting those
+  would make the first line of the report a false accusation.
+
+Deduplicate by SHA: every worktree of a repo sees the same commits.
+
 ## What is deliberately absent
 
 Attribution trailers, force pushes and bare `git stash` were checked here once and removed. A Bash command
