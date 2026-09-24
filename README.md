@@ -71,8 +71,8 @@ flowchart TD
     IM -.if unfamiliar API.-> RSD
     IM -.if uses dep or pattern.-> BP
     IM -->|mandatory gate| CR[marcjimenez:code-review]
-    CR --> UA[agent 1: reuse, maintainability, comments]
-    CR -->|mandatory| BP
+    CR --> UA[agent 1: reuse, maintainability, comments, doc staleness]
+    CR -->|agent 2, mandatory| BP
     UA --> CA[(caches: practice briefs + repo utilities)]
     BP --> CA
     U -->|invoke by name| IMB[/marcjimenez:implement-beta/]
@@ -199,7 +199,9 @@ The `coding-style` primitive enforces a lazy senior developer approach where the
 The `reuse` primitive prevents reinvention by enforcing a hierarchy: YAGNI → existing repository code → standard library → framework features → installed dependencies → one-liner → minimum new code.
 
 ### Code Review That Complements the PR Bot
-The `code-review` primitive audits the local diff before any push, and it is narrow on purpose. Copilot already reviews the PR for correctness, security, test gaps, performance and style, so running those locally reaches the same conclusion twice. Instead it runs two agents: one works the change unit by unit, asking whether a dependency, the framework, the standard library or this repo already provides the thing, whether the piece is reusable or a single-use abstraction, whether it reads as maintainable, and whether its comments and docstrings earn their place; the other audits the change against the tech stack's own documentation. Both write what they learn to a cache, so later reviews start from a list instead of a search.
+The `code-review` primitive audits the local diff before any push, and it is narrow on purpose. Copilot already reviews the PR for correctness, security, test gaps, performance and style, so running those locally reaches the same conclusion twice.
+
+Two agents run instead. The first works the change unit by unit against the reuse ladder, the maintainability of each piece, its comments and docstrings, and any doc the change just made wrong. The second audits the change against the tech stack's own documentation. Both write what they learn to a cache, so later reviews start from a list rather than a search.
 
 ### Best-Practices Auditing
 The `best-practices` primitive judges an approach against how well-regarded GitHub projects and official docs actually do the same thing, reporting each divergence with a SHA-pinned citation and a concrete fix. It runs during planning and implementation as advisory guidance, and as a mandatory blocking pass in code review where every finding must be resolved or explicitly waived.

@@ -51,6 +51,9 @@ gets written or cut.
 `code_review` has two fields, both optional. `/marcjimenez:code-review` runs its two agents on every diff,
 so there is nothing to select or tune beyond these.
 
+`adaptive`, `reviewers`, `confidence_threshold` and `adversarial_verification` were removed in 3.0.0. An
+existing config may still carry them; they are ignored rather than rejected, so nothing needs migrating.
+
 | Field | Type | Meaning |
 |-------|------|---------|
 | `max_rounds` | int | fix-and-re-review loop cap (default `3`) |

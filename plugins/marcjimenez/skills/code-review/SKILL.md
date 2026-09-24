@@ -13,7 +13,7 @@ description: >-
 # Code review — reuse, maintainability, and what the docs say
 
 Two agents, on the LOCAL diff. This does not push and does not open a PR; that is the caller's job once it
-returns clean. The panel is narrow on purpose: Copilot already reviews the PR for correctness, security,
+returns clean. This is narrow on purpose: Copilot already reviews the PR for correctness, security,
 test gaps, performance and style. What it does not do is search the repo and the dependency tree for the
 thing you just rewrote, or read a technology's own documentation to see how it expects to be used.
 
@@ -46,16 +46,27 @@ Review `git diff "$BASE"...HEAD` when the work is committed (the `/marcjimenez:i
 `git diff $(git merge-base "$BASE" HEAD)` for a standalone review with a dirty tree.
 
 Count the changed units: new or changed functions, helpers, classes, types, modules, and public config
-surfaces. One file and a handful of units is a **small** diff, and agent 1 makes one pass over the whole
-change. Anything larger is **deep**: write a unit checklist to
+surfaces. One file and a handful of units is a **small** diff: agent 1 makes one pass over the whole change
+and returns one verdict, and there is no checklist. Anything larger is **deep**: write a unit checklist to
 `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/review.md`, batching trivial units (renames, constants, pure
 config) onto one line and giving each remaining unit its own box. Print which mode ran in one line, so a
 skipped deep pass is visible rather than silent.
 
 ## 2. Agent 1 — reuse, maintainability, comments
 
-Launch it with the prompt, the cache rules, and the output format in `reference/UNIT-AUDIT.md`. Hand it the
-diff, the unit checklist, and any CLAUDE.md or CONTRIBUTING for the touched area.
+Launch it with the prompt, the cache rules, and the output format in `reference/UNIT-AUDIT.md`. A subagent
+resolves none of §0 for itself, so hand over the expanded absolute paths rather than the variable names:
+
+- the diff, the `review.md` checklist on a deep diff, and any CLAUDE.md or CONTRIBUTING for the touched area
+- `$CONFIG_HOME/practices/` and `$CONFIG_HOME/repos/$REPO_KEY/utilities.md`, the two caches it reads
+- `defaults.ponytail_intensity` (default `full`), which decides how hard it cuts
+- the three files the prompt defers to, by absolute path, so nothing sits two hops from here and risks a
+  partial read: `reuse/reference/CLIMB-THE-LADDER.md`, `reuse/reference/REINVENTION-CATALOG.md`, and
+  `coding-style/reference/COMMENTS.md`
+
+It returns its verdicts rather than writing them; you write `review.md` and append `utilities.md` from the
+`VERDICTS` and `UTILITIES` blocks in its report. Agent 2 writes its own brief under `practices/`, which no
+other agent touches.
 
 ## 3. Agent 2 — best practices
 
@@ -70,12 +81,12 @@ divergence is not re-litigated on the next PR.
 ## 4. Fix, then re-review
 
 Fix the findings and re-run only the affected agent, up to `max_rounds`. After that, surface anything left
-as known limitations for the caller's PR description, except unresolved best-practices findings, which
-must be resolved or waived and cannot be deferred.
+as known limitations for the caller's PR description. Best-practices findings are the exception and cannot
+be deferred.
 
 ## 5. Return clean
 
-- [ ] Every unit in the checklist carries a verdict.
+- [ ] Every checklist box carries a verdict, or the small-diff pass returned one for the whole change.
 - [ ] Every best-practices finding is resolved or waived with a reason.
 - [ ] Docs flagged by a finding are updated in this pass, or deferred with a reason.
 - [ ] `utilities.md` and any brief written this run are on disk, so the next run is cheaper.

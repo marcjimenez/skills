@@ -4,6 +4,10 @@ A cache of what a technology's own maintainers say about using it well, kept at
 `$CONFIG_HOME/practices/<technology>.md` and shared across every repo, because GraphQL's
 conventions do not change between projects.
 
+## Contents
+
+Why this exists · When to write one · Freshness · Sourcing bar · Format · A smell is a prompt, not a verdict
+
 ## Why this exists as its own step
 
 Auditing "how do well-regarded repos use this library" finds API misuse. It does not find
@@ -24,9 +28,9 @@ technology consider correct use, and what does it consider a smell".
 
 The brief answers a second question too, in its `Provides` section: what does this
 technology already ship that somebody is about to rewrite by hand? That list is expensive
-to derive from the docs and never changes between repos, which makes it the highest-value
-thing in the cache. `/marcjimenez:code-review` reads it before it starts grepping, so the
-reuse question costs a file read rather than a research pass.
+to derive from the docs and the same in every repo, so it is worth caching even though it
+moves across major versions. `/marcjimenez:code-review` reads it before it starts grepping,
+so the reuse question costs a file read rather than a research pass.
 
 ## When to write one
 

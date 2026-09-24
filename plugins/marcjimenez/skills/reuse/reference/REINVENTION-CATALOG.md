@@ -17,6 +17,6 @@ otherwise.
 
 ## Search order
 
-The four tiers to search — this repo → installed deps → framework built-ins → language stdlib — are ladder
-rungs 2-5 in `CLIMB-THE-LADDER.md`. Report what you searched at each tier. If you genuinely searched all
+The four tiers to search — this repo → language stdlib → framework built-ins → installed deps — are ladder
+rungs 2-5 in `CLIMB-THE-LADDER.md`, in that order. Report what you searched at each tier. If you genuinely searched all
 four and found nothing, say so explicitly per new utility — silence is not acceptable.

@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Configure marcjimenez — external connections and their API keys, code-review depth, VCS/PR settings, and the default minimalism intensity, persisted to your marcjimenez config. Run once to get started, or any time to change the policy.
+description: Configure marcjimenez — external connections and their API keys, code-review settings, VCS/PR settings, and the default minimalism intensity, persisted to your marcjimenez config. Run once to get started, or any time to change the policy.
 disable-model-invocation: true
 ---
 
@@ -52,8 +52,8 @@ run it inline yourself if the user explicitly asks — and name that transcript 
 ## 2. Code review
 
 Code review runs the same two agents on every diff and scales its own depth to the diff's size, so there is
-nothing required here. The only knobs are `max_rounds` (fix-loop cap, default 3) and `waivers` (accepted
-best-practices divergences, which the review appends to itself). Field detail: `reference/CONFIG-SCHEMA.md`.
+nothing required here. Offer its two optional knobs, `max_rounds` and `waivers`, only if asked; both are
+documented in `reference/CONFIG-SCHEMA.md`.
 
 `/marcjimenez:resolve-code-review` (triages a PR's existing review comments) reads a `resolve_code_review`
 section with two optional knobs, both default true: `auto_reply_bots` (post a clear rebuttal to a bot
