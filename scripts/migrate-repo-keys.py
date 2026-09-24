@@ -39,7 +39,11 @@ BLOCK_RE = re.compile(
 
 
 def key_block():
-    m = BLOCK_RE.search(BLOCK_SOURCE.read_text())
+    try:
+        text = BLOCK_SOURCE.read_text()
+    except OSError as exc:
+        sys.exit(f"cannot read the REPO_KEY block from {BLOCK_SOURCE}: {exc}")
+    m = BLOCK_RE.search(text)
     if not m:
         sys.exit(f"could not find the REPO_KEY block in {BLOCK_SOURCE}")
     return m.group(0) + '\nprintf "%s" "$REPO_KEY"\n'
