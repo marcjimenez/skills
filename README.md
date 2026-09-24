@@ -192,7 +192,7 @@ Before the cache was keyed by repository, `REPO_KEY` hashed the checkout path, s
 ./scripts/migrate-repo-keys.py --apply
 ```
 
-It resolves a directory through its checkout's remote where the checkout still exists, and through a matching `integration_test` recipe where it does not. Anything left over is listed with a guess read out of its run artifacts, which is a hint rather than a verdict; apply one deliberately with `--map <dir>=<key>`. Merged sources are renamed `<key>.migrated` rather than deleted, the merged config is written atomically, and a failure partway through a group rolls that group back rather than leaving it half moved.
+It resolves a directory through its checkout's remote where the checkout still exists, and through a matching `integration_test` recipe where it does not. Anything left over is listed with a guess read out of its run artifacts, which is a hint rather than a verdict; apply one deliberately with `--map <dir>=<key>`. Merged sources are renamed `<key>.migrated` rather than deleted, and the merged config is written atomically. A failure partway through a group restores every source it had already moved; the destination directory and its merged config are left in place, so a retry folds into them rather than starting over.
 
 ## Plugin Structure
 

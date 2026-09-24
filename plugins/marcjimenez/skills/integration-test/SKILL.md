@@ -17,18 +17,26 @@ environment, reads what landed in the database, and cleans up after itself.
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
 # One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
-# get-url, not `config --get`: only get-url expands an insteadOf rewrite. Lowercased with tr, not
-# sed's \L, which BSD sed does not implement and silently turns into a literal L.
-REPO_KEY="$(git remote get-url origin 2>/dev/null \
-  | sed -E 's#^([a-z+]+://[^/]+/|[^/:]+:)##; s#\.git$##; s#[/ ]#-#g' | tr '[:upper:]' '[:lower:]')"
-# A local-path remote leaves a leading '-', which every coreutils tool reads as an option; an unknown
-# scheme leaves a ':'. Either way the repo path below is the better identity, so fall through.
-case "$REPO_KEY" in ""|-*|*:*) REPO_KEY="" ;; esac
-# --git-common-dir is the MAIN checkout's git dir from inside a worktree, where --show-toplevel is the
-# worktree and would split the cache. --path-format=absolute makes it absolute AND canonical.
-[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" \
-  && [ -n "$G" ] && R="$(dirname "$G")" \
-  && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
+# get-url, not `config --get`: only get-url expands an insteadOf rewrite. A remote that is a local,
+# relative or Windows path is not a portable identity, so it falls through to the path below.
+REMOTE="$(git remote get-url origin 2>/dev/null)"
+case "$REMOTE" in *://*|*@*:*) ;; *) REMOTE="" ;; esac
+# Lowercased with tr, not sed's \L: BSD sed does not implement it and emits a literal L. GitHub treats
+# Owner/Repo and owner/repo as one repository, so without this they would hash to two caches.
+REPO_KEY="$(printf '%s' "$REMOTE" \
+  | sed -E 's#/+$##; s#^[a-z+]+://##; s#^[^/@]*@##; s#^[^/:]+[:/]##; s#\.git$##; s#[/ ]#-#g' \
+  | tr '[:upper:]' '[:lower:]')"
+case "$REPO_KEY" in ""|.|..|-*|*:*|*\\*) REPO_KEY="" ;; esac
+if [ -z "$REPO_KEY" ]; then
+  # --git-common-dir is the MAIN checkout's git dir from inside a worktree, where --show-toplevel is
+  # the worktree and would split the cache. --path-format=absolute (git 2.31+) also canonicalizes.
+  G="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null)"
+  [ -n "$G" ] && G="$(cd -- "$G" 2>/dev/null && pwd -P)"
+  # Only a normal checkout's common dir ends in /.git. A submodule's is .git/modules/<name> and a bare
+  # repo's is the repo itself; for those the common dir IS the identity, so do not strip a parent.
+  case "$G" in */.git) R="${G%/.git}" ;; *) R="$G" ;; esac
+  [ -n "$R" ] && REPO_KEY="$(basename "$R" .git)-$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+fi
 [ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
 RUN_DIR="$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>"
 mkdir -p "$RUN_DIR"

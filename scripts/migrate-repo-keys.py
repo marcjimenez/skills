@@ -26,18 +26,29 @@ DEFAULT_SEARCH = [Path.home() / "conductor" / "repos", Path.home() / "conductor"
 # Dropped into every destination. Without it a second run finds no live checkout for a hand-mapped
 # directory, lists the destination it just built as unresolved, and invites you to re-map it.
 MARKER = ".migrated-into"
-REMOTE_PREFIX = re.compile(r"^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)")
+# The single source of truth for the key, lifted from the skills at runtime. A second copy here is
+# what let the two drift apart once already: the shell block gained insteadOf handling, lowercasing and
+# a local-path guard, and the Python copy silently kept computing a different key.
+BLOCK_SOURCE = Path(__file__).resolve().parent.parent / (
+    "plugins/marcjimenez/skills/setup/reference/CONFIG-SCHEMA.md"
+)
+BLOCK_RE = re.compile(
+    r"^# One cache per REPOSITORY.*?^\[ -n \"\$REPO_KEY\" \] \|\| \{ echo \"not in a git repository\".*?$",
+    re.S | re.M,
+)
 
 
-def key_from_remote(checkout):
-    """owner-repo from the origin remote, matching the shell derivation the skills use."""
-    r = subprocess.run(
-        ["git", "config", "--get", "remote.origin.url"],
-        cwd=checkout, capture_output=True, text=True,
-    )
-    if r.returncode != 0 or not r.stdout.strip():
-        return ""
-    return re.sub(r"[/ ]", "-", re.sub(r"\.git$", "", REMOTE_PREFIX.sub("", r.stdout.strip())))
+def key_block():
+    m = BLOCK_RE.search(BLOCK_SOURCE.read_text())
+    if not m:
+        sys.exit(f"could not find the REPO_KEY block in {BLOCK_SOURCE}")
+    return m.group(0) + '\nprintf "%s" "$REPO_KEY"\n'
+
+
+def key_from_remote(checkout, block):
+    """Run the skills' own derivation in the checkout, so there is exactly one definition of the key."""
+    r = subprocess.run(["sh", "-c", block], cwd=checkout, capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 else ""
 
 
 def legacy_key(path):
@@ -192,15 +203,17 @@ def main():
     if not REPOS.is_dir():
         sys.exit(f"nothing to migrate: {REPOS} does not exist")
 
+    block = key_block()
     stored = [
         d for d in sorted(REPOS.iterdir())
-        if d.is_dir() and not d.name.endswith(".migrated") and not (d / MARKER).exists()
+        # free_path also produces .migrated-2, .migrated-3 on a later wave; none of them are orphans.
+        if d.is_dir() and not re.match(r".*\.migrated(-\d+)?$", d.name) and not (d / MARKER).exists()
     ]
 
     # Pass 1: a stored key whose checkout still exists resolves through that checkout's remote.
     resolved, by_fingerprint, current_keys = {}, {}, set()
     for checkout in live_checkouts(roots):
-        new = key_from_remote(checkout)
+        new = key_from_remote(checkout, block)
         if not new:
             continue
         current_keys.add(new)
