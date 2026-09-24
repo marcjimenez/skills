@@ -61,7 +61,8 @@ limit findings to what the repo itself and its installed-dependency docs can sup
 
    Audit the target against the brief's **Rules** and **Smells** directly. A rule the target breaks is a
    finding, cited to the brief's source. Check **Not rules** before flagging, so a settled non-issue is not
-   raised again.
+   raised again. Keep **Provides** current as you go — what the technology ships that people rehand-roll —
+   because `/marcjimenez:code-review` reads that section instead of researching the same thing again.
 
 3. **Gather prior art (reuse research's GitHub playbook — do NOT duplicate it).** For each item, find how
    high-signal projects do it and what the docs recommend. Mechanics live in
@@ -103,7 +104,7 @@ to the caller.
 - [ ] Every technology of substance has a brief that is present and within `practices.max_age_days`, and
       the target was audited against its Rules and Smells.
 - [ ] A brief written or refreshed this run was saved to `$CONFIG_HOME/practices/`, so the next run and the
-      next repo do not re-research it.
+      next repo do not re-research it, and its `Provides` section names what the technology ships.
 - [ ] Every dependency, framework, and pattern of substance in the target was audited; none silently skipped.
 - [ ] Each finding cites a real, SHA-pinned GitHub source or an official doc — no unsourced assertions.
 - [ ] Each finding names the concrete change, not "consider improving".

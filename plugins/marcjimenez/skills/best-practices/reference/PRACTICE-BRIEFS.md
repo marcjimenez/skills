@@ -22,6 +22,12 @@ documenting a schema" surfaces it immediately.
 So the question this step asks is not "how do others call this API" but "what does this
 technology consider correct use, and what does it consider a smell".
 
+The brief answers a second question too, in its `Provides` section: what does this
+technology already ship that somebody is about to rewrite by hand? That list is expensive
+to derive from the docs and never changes between repos, which makes it the highest-value
+thing in the cache. `/marcjimenez:code-review` reads it before it starts grepping, so the
+reuse question costs a file read rather than a research pass.
+
 ## When to write one
 
 Write a brief for a technology the target leans on structurally, where "using it wrong" is
@@ -68,6 +74,13 @@ checked against a diff is an opinion, not a rule.
 - SDL `"""descriptions"""` are published to clients via introspection; `#` comments are
   stripped. Implementation detail belongs in `#`. [graphql.org/learn/schema]
 - A schema should not expose the implementation details of a service. [Principled GraphQL]
+
+## Provides
+What this technology ships that people commonly rehand-roll, with the import path. Written
+for the reuse question, so name the symbol somebody would otherwise write themselves.
+
+- `graphql.buildSchema(sdl)` — parse and validate SDL; no need for a custom loader.
+- `@graphql-tools/merge` `mergeTypeDefs` — merging SDL across files.
 
 ## Smells
 What "wrong" looks like in a diff, concretely enough to grep for.

@@ -1,6 +1,6 @@
 # marcjimenez Skills Plugin
 
-A composable, opinionated development workflow for Claude Code featuring research-backed planning, code minimalism discipline, and configurable adversarial code review.
+A composable, opinionated development workflow for Claude Code featuring research-backed planning, code minimalism discipline, and a code review that hunts reuse and maintainability rather than repeating what the PR bot already said.
 
 ## Overview
 
@@ -26,7 +26,7 @@ chained into after you approve the step before, so they must stay model-invokabl
 | `/marcjimenez:brainstorm` | user only | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
 | `/marcjimenez:implement` | auto | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
 | `/marcjimenez:implement-beta` | user only | Opt-in trial of the build cycle with a required end-to-end verification phase before code review |
-| `/marcjimenez:setup` | user only | Configures external connections, API keys, code review depth, VCS settings, and default preferences |
+| `/marcjimenez:setup` | user only | Configures external connections, API keys, code review settings, VCS settings, and default preferences |
 
 ### Primitives (Auto-Invoked)
 
@@ -39,13 +39,13 @@ chained into after you approve the step before, so they must stay model-invokabl
 | `marcjimenez:coding-style` | Before writing or editing non-trivial code; enforces ponytail minimalism and root-cause bug fixes |
 | `marcjimenez:writing-for-agents` | When creating SKILL.md, CLAUDE.md, or other agent-facing documentation |
 | `marcjimenez:integration-test` | After unit tests and lint are green, before code review; starts the services, fetches a token, runs the real calls, inspects the database rows, then undoes them and proves the undo |
-| `marcjimenez:code-review` | After completing implementation, before git push or PR creation; triages the diff to a relevant reviewer subset plus a mandatory best-practices audit |
+| `marcjimenez:code-review` | After completing implementation, before git push or PR creation; two agents audit the local diff for reuse, maintainability and comment discipline, and against the tech stack's own docs |
 | `marcjimenez:resolve-code-review` | After a PR has review comments; fetches every thread, states a take, resolves the self-explanatory ones autonomously, and batches the rest into a single Q&A session |
 | `marcjimenez:unslop` | Whenever writing or editing prose or non-trivial code; removes AI-slop tells by density and rewrites to plain natural language, rejecting both slop and clipped over-correction |
 | `marcjimenez:task-tracking` | When starting multi-step work; maintains durable task file with verifiable completion criteria |
 | `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions, drafts the body in its idiom, and applies the ready label when the ticket passes the agent-readiness gate |
 
-The `implement` orchestrator hard-gates code review before any push, ensuring all changes undergo adversarial audit before leaving your local machine.
+The `implement` orchestrator hard-gates code review before any push, so nothing leaves your machine unreviewed.
 
 `implement-beta` is a time-boxed trial of that same cycle with an added end-to-end phase, and it never auto-triggers: invoke it by name. Promotion over `implement` is gated on three green runs across two or more repos, one prod run whose cleanup was proven by re-query, one discovery run that derived a working recipe unaided, and one waiver run on a diff with no runtime surface.
 
@@ -71,9 +71,10 @@ flowchart TD
     IM -.if unfamiliar API.-> RSD
     IM -.if uses dep or pattern.-> BP
     IM -->|mandatory gate| CR[marcjimenez:code-review]
-    CR --> TRI[triage: relevant reviewers only]
+    CR --> UA[agent 1: reuse, maintainability, comments]
     CR -->|mandatory| BP
-    TRI --> REV[adversarial review panel]
+    UA --> CA[(caches: practice briefs + repo utilities)]
+    BP --> CA
     U -->|invoke by name| IMB[/marcjimenez:implement-beta/]
     IMB --> TT
     IMB --> CS
@@ -136,14 +137,18 @@ Configuration and artifacts are stored in a cross-platform directory structure o
 <config-home>/
 ├── global/
 │   └── config.json              # Global default settings (written by /marcjimenez:setup)
+├── practices/
+│   └── <technology>.md          # What a technology says about using it well, and what it ships
 ├── repos/
 │   └── <repo-key>/
 │       ├── config.json          # Per-repository overrides
+│       ├── utilities.md         # This repo's reusable helpers, indexed by code review
 │       └── runs/
 │           └── <feature-slug>/
 │               ├── research.md  # Research findings
 │               ├── plan.md      # Implementation plan
 │               ├── todo.md      # Task tracking file
+│               ├── review.md    # Per-unit review checklist and verdicts
 │               └── integration.md  # End-to-end run evidence and cleanup proof
 └── secrets.env                  # API keys (chmod 600, never committed)
 ```
@@ -156,17 +161,17 @@ Inline arguments → Per-repository config → Global config → Built-in defaul
 Run `/marcjimenez:setup` to configure:
 
 - **External Connections:** Enable/disable Context7, WebSearch, WebFetch, and GitHub CLI with API key management
-- **Code Review:** Adaptive by default (triage selects the reviewers each diff warrants from all eight); optionally narrow the candidate set or disable triage
+- **Code Review:** Two agents on every diff, with depth scaled to the size of the change; the only knobs are the fix-loop cap and recorded best-practices waivers
 - **VCS Settings:** Configure base branch, auto-assign reviewers, and branch prefixes
 - **Default Preferences:** Set default code minimalism intensity
 
 **Note:** No MCP server required. Context7 is accessed via its REST API using `CONTEXT7_API_KEY`. All other integrations use Claude's built-in tools or the `gh` CLI.
 
-Code review works out of the box with no configuration: the triage pass adapts to each diff automatically.
+Code review works out of the box with no configuration: it runs the same two agents on every diff and
+scales its own depth to the size of the change.
 
 **Configuration Schema:**
 - Full schema: `plugins/marcjimenez/skills/setup/reference/CONFIG-SCHEMA.md`
-- Code review fields: `plugins/marcjimenez/skills/code-review/reference/REVIEW-DEPTH.md`
 
 ## Validation
 
@@ -193,8 +198,8 @@ The `coding-style` primitive enforces a lazy senior developer approach where the
 ### Climb-the-Ladder Reuse Doctrine
 The `reuse` primitive prevents reinvention by enforcing a hierarchy: YAGNI → existing repository code → standard library → framework features → installed dependencies → one-liner → minimum new code.
 
-### Adversarial Code Review
-The `code-review` primitive runs multi-reviewer audits on local diffs before any push. A triage pass reads the diff and runs only the reviewers it warrants from the full set of eight (a docs fix skips the security reviewer; an auth change keeps it). Reviewers are explicitly adversarial, assuming code is broken until proven otherwise.
+### Code Review That Complements the PR Bot
+The `code-review` primitive audits the local diff before any push, and it is narrow on purpose. Copilot already reviews the PR for correctness, security, test gaps, performance and style, so running those locally reaches the same conclusion twice. Instead it runs two agents: one works the change unit by unit, asking whether a dependency, the framework, the standard library or this repo already provides the thing, whether the piece is reusable or a single-use abstraction, whether it reads as maintainable, and whether its comments and docstrings earn their place; the other audits the change against the tech stack's own documentation. Both write what they learn to a cache, so later reviews start from a list instead of a search.
 
 ### Best-Practices Auditing
 The `best-practices` primitive judges an approach against how well-regarded GitHub projects and official docs actually do the same thing, reporting each divergence with a SHA-pinned citation and a concrete fix. It runs during planning and implementation as advisory guidance, and as a mandatory blocking pass in code review where every finding must be resolved or explicitly waived.

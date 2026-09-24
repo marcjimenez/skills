@@ -90,6 +90,12 @@ For each one, in this order:
 5. Compare against Expected. A mismatch is a finding: report it and fix the code, do not adjust the
    expectation to match what happened.
 
+Raw SQL, regexes over real input, and wire-format strings are the reason this phase exists, so make sure a
+scenario executes each one against the real engine. A mocked `query()` proves the code path and never the
+statement. Two defects in one change passed unit tests and prose review and appeared only on execution: a
+bind parameter the warehouse refused to type (`-$1` over `unknown`), and an `ESCAPE '\'` clause that left
+the string literal unterminated because that engine reads a backslash inside a literal as its own escape.
+
 ## Phase 6 — Undo, then prove it
 
 Run the reversals in reverse order of the mutations that created them, so a row another row references is
