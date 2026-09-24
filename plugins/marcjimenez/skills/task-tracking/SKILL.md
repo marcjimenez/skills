@@ -23,8 +23,13 @@ Artifacts live under the marcjimenez config home, keyed by repo — never inside
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"          # macOS + Linux; Windows: %APPDATA%\marcjimenez
-TOP="$(git rev-parse --show-toplevel)"
-REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+# One cache per REPOSITORY, shared by every worktree and workspace. --git-common-dir, not
+# --show-toplevel: inside a worktree the latter returns the worktree, which splits the cache.
+REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
+  | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
+[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
+  && R="$(CDPATH= cd -- "$(dirname "$G")" && pwd -P)" \
+  && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
 RUN_DIR="$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>"
 mkdir -p "$RUN_DIR"
 # task file: $RUN_DIR/todo.md
@@ -35,6 +40,11 @@ underscores → hyphens, strip other punctuation (e.g. "Add OAuth login" → `ad
 ONCE. If `/marcjimenez:plan` already produced artifacts for this feature, reuse its `<slug>` so `research.md`,
 `plan.md`, and `todo.md` share one `runs/<slug>/` directory. If the branch is `{prefix}/{slug}`, the branch
 slug IS the slug.
+
+One cache serves every worktree of a repo, so two parallel workspaces can reach for the same `<slug>`.
+Before creating `runs/<slug>/`, check whether `todo.md` is already there naming a different branch. If it
+is, append that branch's last segment (`add-oauth-login-retry-backoff`) rather than writing over work in
+progress somewhere else.
 
 ## Writing tasks
 

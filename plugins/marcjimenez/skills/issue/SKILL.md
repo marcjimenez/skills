@@ -20,8 +20,13 @@ issue with the wrong label or project is corrected by hand afterwards.
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
-TOP="$(git rev-parse --show-toplevel 2>/dev/null)"
-REPO_KEY="$([ -n "$TOP" ] && printf '%s-%s' "$(basename "$TOP")" "$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
+# One cache per REPOSITORY, shared by every worktree and workspace. --git-common-dir, not
+# --show-toplevel: inside a worktree the latter returns the worktree, which splits the cache.
+REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
+  | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
+[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
+  && R="$(CDPATH= cd -- "$(dirname "$G")" && pwd -P)" \
+  && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
 ```
 
 Deep-merge these, highest precedence first. For each field take the first source that defines it. Read each

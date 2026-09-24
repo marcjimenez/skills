@@ -5,13 +5,41 @@ precedence as everything else (inline args → per-repo → global → built-in 
 written into the target repo.
 
 ```
-$CONFIG_HOME/global/config.json             # global default
-$CONFIG_HOME/repos/<REPO_KEY>/config.json   # per-repo override (wins over global)
-$CONFIG_HOME/repos/<REPO_KEY>/utilities.md  # this repo's reusable helpers, written by /marcjimenez:code-review
-$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/  # durable run artifacts (research.md, plan.md, todo.md, review.md)
-$CONFIG_HOME/practices/<technology>.md      # technology briefs, shared across every repo
-$CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by skills (see below)
+$CONFIG_HOME/global/config.json                  # global default
+$CONFIG_HOME/repos/marcjimenez-skills/config.json    # per-repo override (wins over global)
+$CONFIG_HOME/repos/marcjimenez-skills/utilities.md   # this repo's reusable helpers, written by /marcjimenez:code-review
+$CONFIG_HOME/repos/marcjimenez-skills/runs/<slug>/   # run artifacts (research.md, plan.md, todo.md, review.md)
+$CONFIG_HOME/practices/<technology>.md           # technology briefs, shared across every repo
+$CONFIG_HOME/secrets.env                         # API keys, chmod 600, sourced by skills (see below)
 ```
+
+## `REPO_KEY`: one cache per repository
+
+The key is `owner-repo` from the origin remote, so every worktree and every Conductor workspace of a
+repository shares one cache. This matters most for `integration_test`, whose recipe is expensive to derive,
+and for `code_review.waivers`, where a divergence should be settled once rather than per checkout.
+
+```bash
+REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
+  | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
+[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
+  && R="$(CDPATH= cd -- "$(dirname "$G")" && pwd -P)" \
+  && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
+```
+
+The fallback covers a repo with no remote. It uses `--git-common-dir`, which returns the MAIN checkout's
+git directory from inside a worktree, where `--show-toplevel` returns the worktree and splits the cache.
+`pwd -P` rather than `pwd`, because a logical path and its physical form hash differently, which is how
+`/tmp` and `/private/tmp` used to produce two keys for one repo.
+
+Two edges, documented rather than defended against because both are rare. The same `owner/repo` on two
+different hosts collides into one key. A bare repo puts the fallback one directory above where you would
+expect. Neither is worth the code it would take to handle.
+
+The derivation is copy-pasted into every skill that needs it, because a skill cannot import. It drifted
+into two variants once, which is what produced a cache directory per workspace, so `scripts/validate.sh`
+now fails the build if the copies stop matching. Existing path-keyed directories are folded into
+repository-keyed ones by `scripts/migrate-repo-keys.sh`, which is a dry run unless given `--apply`.
 
 ```json
 {

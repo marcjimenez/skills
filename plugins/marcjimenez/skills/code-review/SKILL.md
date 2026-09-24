@@ -21,8 +21,13 @@ thing you just rewrote, or read a technology's own documentation to see how it e
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
-TOP="$(git rev-parse --show-toplevel)"
-REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+# One cache per REPOSITORY, shared by every worktree and workspace. --git-common-dir, not
+# --show-toplevel: inside a worktree the latter returns the worktree, which splits the cache.
+REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
+  | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
+[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
+  && R="$(CDPATH= cd -- "$(dirname "$G")" && pwd -P)" \
+  && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
 ```
 
 Read `$CONFIG_HOME/repos/$REPO_KEY/config.json`, then `$CONFIG_HOME/global/config.json`, taking the first

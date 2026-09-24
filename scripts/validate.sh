@@ -65,6 +65,21 @@ for name in $handoffs; do
   fi
 done
 
+echo "== REPO_KEY derivation is identical everywhere =="
+# It is copy-pasted into ~10 skills because a skill cannot import. It drifted into two variants once
+# already, which is how every Conductor workspace ended up with its own cache instead of sharing one.
+key_forms="$(grep -rh 'REPO_KEY=' plugins | sed 's/^[[:space:]]*//' | sort -u)"
+key_count="$(printf '%s\n' "$key_forms" | grep -c .)"
+if [ "$key_count" -eq 2 ]; then
+  note "ok $(grep -rl 'REPO_KEY=' plugins | wc -l | tr -d ' ') files, one form"
+else
+  err "REPO_KEY derivation has drifted: expected 2 distinct lines, found $key_count"
+  printf '%s\n' "$key_forms" | sed 's/^/    /'
+fi
+grep -rn 'rev-parse --show-toplevel' plugins >/dev/null \
+  && err "--show-toplevel returns the worktree, not the repo; use --git-common-dir" \
+  || note "ok no --show-toplevel"
+
 echo "== no stale references =="
 if grep -rniE 'marc-workflow|langgraph-agent|joinkudos' plugins/marcjimenez README.md .claude-plugin >/dev/null; then
   err "stale reference (marc-workflow/langgraph-agent/joinkudos) present"
