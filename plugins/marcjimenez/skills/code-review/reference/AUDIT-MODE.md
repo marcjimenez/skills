@@ -9,7 +9,7 @@ section but still needs both paths.
 
 Two adjustments for a sweep this size:
 
-- Seed the run from `$CONFIG_HOME/repos/$REPO_KEY/utilities.md` and fold every helper the sweep reads back
+- Seed the run from `$CONFIG_HOME/repos/$REPO_KEY/utilities.md` and fold the returned `UTILITIES` block back
   into it. A sweep is the cheapest opportunity to build that index, and it makes every later review faster.
 - Skip questions 5 and 6 (comments, docstrings, doc staleness) unless asked for specifically. Over a whole tree
   it produces more findings than anyone will act on, and it drowns the reuse findings that motivated the

@@ -47,10 +47,12 @@ Review `git diff "$BASE"...HEAD` when the work is committed (the `/marcjimenez:i
 
 Count the changed units: new or changed functions, helpers, classes, types, modules, and public config
 surfaces. One file and a handful of units is a **small** diff: agent 1 makes one pass over the whole change
-and returns one verdict, and there is no checklist. Anything larger is **deep**: write a unit checklist to
-`$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/review.md`, batching trivial units (renames, constants, pure
-config) onto one line and giving each remaining unit its own box. Print which mode ran in one line, so a
-skipped deep pass is visible rather than silent.
+and returns one verdict. Anything larger is **deep**: enumerate the units as a checklist, batching trivial
+ones (renames, constants, pure config) onto one line and giving each of the rest its own box.
+
+Either way the run keeps one file, `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/review.md`, with a `## Checklist`
+section that a small diff leaves out and a `## Verdicts` section that starts empty and is filled in §2.
+Print which mode ran in one line, so a skipped deep pass is visible rather than silent.
 
 ## 2. Agent 1 — reuse, maintainability, comments
 
@@ -64,9 +66,9 @@ resolves none of §0 for itself, so hand over the expanded absolute paths rather
   partial read: `reuse/reference/CLIMB-THE-LADDER.md`, `reuse/reference/REINVENTION-CATALOG.md`, and
   `coding-style/reference/COMMENTS.md`
 
-It returns its verdicts rather than writing them; you write `review.md` and append `utilities.md` from the
-`VERDICTS` and `UTILITIES` blocks in its report. Agent 2 writes its own brief under `practices/`, which no
-other agent touches.
+It returns its verdicts rather than writing them. You replace the `## Verdicts` section of `review.md` with
+its `VERDICTS` block, and fold its `UTILITIES` block into `utilities.md`, dropping any entry it reported as
+no longer resolving. Agent 2 writes its own brief under `practices/`, which no other agent touches.
 
 ## 3. Agent 2 — best practices
 

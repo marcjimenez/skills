@@ -1,7 +1,6 @@
 # Unit audit — the reuse, maintainability and comment prompt
 
-The prompt for the one reviewing agent. Copilot covers correctness, security, tests, performance and style
-on the PR; this agent covers what Copilot reads past, so it never widens beyond the six questions below.
+The prompt for the one reviewing agent, which never widens beyond the six questions below.
 
 ## Read the caches before searching
 
@@ -13,10 +12,11 @@ Both are hints that make the search cheaper, and neither is evidence.
 
 A cached entry becomes a finding only after re-reading the `file:line` or the export in the working tree.
 Repos move and briefs age; an unverified citation is worse than no citation, because a reviewer who is
-wrong once gets ignored afterwards. Delete any `utilities.md` entry whose path no longer resolves.
+wrong once gets ignored afterwards. Name any `utilities.md` entry whose path no longer resolves, so the
+caller can drop it.
 
-The caller resolves both paths and hands them over, along with the intensity and the two doctrine files the
-prompt points at. An agent that was given none of those says so rather than searching blind.
+The caller resolves both paths and hands them over, along with the intensity and the three doctrine files
+the prompt points at. An agent that was given none of those says so rather than searching blind.
 
 ## The prompt
 
@@ -35,8 +35,9 @@ prompt points at. An agent that was given none of those says so rather than sear
 >    `go.mod`). Cite the exported symbol. The rung order and the "stop at the first rung that holds" rule
 >    are `/marcjimenez:reuse` `reference/CLIMB-THE-LADDER.md`; the table of things people rebuild is its
 >    `reference/REINVENTION-CATALOG.md`. Report what you searched at each rung.
-> 3. **Is this reusable, or single-use?** A helper with one caller, a layer with one implementation, or a
->    config nobody sets should be inlined. Ask first whether it needs to exist at all. If it is worth
+> 3. **Is this reusable, single-use, or unnecessary?** A helper with one caller, a layer with one
+>    implementation, or a config nobody sets should be inlined. Dead code, unused flexibility and a
+>    speculative feature should go. Same behaviour in fewer lines counts here too. If the unit is worth
 >    keeping, say where else it should now be called from.
 > 4. **Is it written to be maintained?** Judge naming, shape, control flow depth, and error handling at
 >    the boundary. Name the specific edit, not "consider refactoring".
