@@ -23,8 +23,8 @@ Artifacts live under the marcjimenez config home, keyed by repo — never inside
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"          # macOS + Linux; Windows: %APPDATA%\marcjimenez
-# One cache per REPOSITORY, shared by every worktree and workspace. --git-common-dir, not
-# --show-toplevel: inside a worktree the latter returns the worktree, which splits the cache.
+# One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
+# The no-remote fallback uses --git-common-dir: --show-toplevel returns the worktree, splitting the cache.
 REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
   | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
 [ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
@@ -42,9 +42,11 @@ ONCE. If `/marcjimenez:plan` already produced artifacts for this feature, reuse 
 slug IS the slug.
 
 One cache serves every worktree of a repo, so two parallel workspaces can reach for the same `<slug>`.
-Before creating `runs/<slug>/`, check whether `todo.md` is already there naming a different branch. If it
-is, append that branch's last segment (`add-oauth-login-retry-backoff`) rather than writing over work in
-progress somewhere else.
+The task file records its `branch:` for exactly this reason. Before creating `runs/<slug>/`, read any
+`todo.md` already there. A matching `branch:` means the directory is your own earlier run, so reuse it. A
+different one means somebody else is mid-flight, so suffix your directory with your whole branch name,
+slashes to hyphens: `fix/oauth-token-refresh` sharing the slug `oauth-token-refresh` gets
+`runs/oauth-token-refresh--fix-oauth-token-refresh`. Branch names are unique, so the suffix always is.
 
 ## Writing tasks
 

@@ -4,8 +4,8 @@
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
-# One cache per REPOSITORY, shared by every worktree and workspace. --git-common-dir, not
-# --show-toplevel: inside a worktree the latter returns the worktree, which splits the cache.
+# One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
+# The no-remote fallback uses --git-common-dir: --show-toplevel returns the worktree, splitting the cache.
 REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
   | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
 [ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \

@@ -68,13 +68,22 @@ done
 echo "== REPO_KEY derivation is identical everywhere =="
 # It is copy-pasted into ~10 skills because a skill cannot import. It drifted into two variants once
 # already, which is how every Conductor workspace ended up with its own cache instead of sharing one.
-key_forms="$(grep -rh 'REPO_KEY=' plugins | sed 's/^[[:space:]]*//' | sort -u)"
-key_count="$(printf '%s\n' "$key_forms" | grep -c .)"
-if [ "$key_count" -eq 2 ]; then
-  note "ok $(grep -rl 'REPO_KEY=' plugins | wc -l | tr -d ' ') files, one form"
+# Compare the WHOLE block, not just the lines containing REPO_KEY=. The sed pattern and the printf
+# format sit on continuation lines, and drift there is exactly what split the cache before.
+key_sums="$(for f in $(grep -rl 'REPO_KEY=' plugins); do
+  awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5 -q 2>/dev/null \
+    || awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5sum | cut -d" " -f1
+done | sort -u)"
+key_files="$(grep -rl 'REPO_KEY=' plugins | wc -l | tr -d ' ')"
+if [ "$(printf '%s\n' "$key_sums" | grep -c .)" -eq 1 ]; then
+  note "ok $key_files files, one block"
 else
-  err "REPO_KEY derivation has drifted: expected 2 distinct lines, found $key_count"
-  printf '%s\n' "$key_forms" | sed 's/^/    /'
+  err "REPO_KEY derivation has drifted across $key_files files"
+  for f in $(grep -rl 'REPO_KEY=' plugins); do
+    s="$(awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5 -q 2>/dev/null \
+      || awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5sum | cut -d" " -f1)"
+    note "  $s  $f"
+  done
 fi
 grep -rn 'rev-parse --show-toplevel' plugins >/dev/null \
   && err "--show-toplevel returns the worktree, not the repo; use --git-common-dir" \

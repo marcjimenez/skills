@@ -6,16 +6,16 @@ written into the target repo.
 
 ```
 $CONFIG_HOME/global/config.json                  # global default
-$CONFIG_HOME/repos/marcjimenez-skills/config.json    # per-repo override (wins over global)
-$CONFIG_HOME/repos/marcjimenez-skills/utilities.md   # this repo's reusable helpers, written by /marcjimenez:code-review
-$CONFIG_HOME/repos/marcjimenez-skills/runs/<slug>/   # run artifacts (research.md, plan.md, todo.md, review.md)
+$CONFIG_HOME/repos/<REPO_KEY>/config.json        # per-repo override (wins over global)
+$CONFIG_HOME/repos/<REPO_KEY>/utilities.md       # this repo's reusable helpers, written by /marcjimenez:code-review
+$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/       # run artifacts (research.md, plan.md, todo.md, review.md)
 $CONFIG_HOME/practices/<technology>.md           # technology briefs, shared across every repo
 $CONFIG_HOME/secrets.env                         # API keys, chmod 600, sourced by skills (see below)
 ```
 
 ## `REPO_KEY`: one cache per repository
 
-The key is `owner-repo` from the origin remote, so every worktree and every Conductor workspace of a
+`REPO_KEY` is `owner-repo` from the origin remote (this repo is `marcjimenez-skills`), so every worktree and every Conductor workspace of a
 repository shares one cache. This matters most for `integration_test`, whose recipe is expensive to derive,
 and for `code_review.waivers`, where a divergence should be settled once rather than per checkout.
 
@@ -39,7 +39,7 @@ expect. Neither is worth the code it would take to handle.
 The derivation is copy-pasted into every skill that needs it, because a skill cannot import. It drifted
 into two variants once, which is what produced a cache directory per workspace, so `scripts/validate.sh`
 now fails the build if the copies stop matching. Existing path-keyed directories are folded into
-repository-keyed ones by `scripts/migrate-repo-keys.sh`, which is a dry run unless given `--apply`.
+repository-keyed ones by `scripts/migrate-repo-keys.py`, which is a dry run unless given `--apply`.
 
 ```json
 {

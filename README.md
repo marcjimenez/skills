@@ -188,8 +188,8 @@ This checks that manifests parse correctly, all 17 skills have valid frontmatter
 Before the cache was keyed by repository, `REPO_KEY` hashed the checkout path, so every git worktree and every Conductor workspace of the same repo got its own config, its own `integration_test` recipe and its own waivers. This folds them together:
 
 ```bash
-./scripts/migrate-repo-keys.sh            # dry run, shows what it would merge
-./scripts/migrate-repo-keys.sh --apply
+./scripts/migrate-repo-keys.py            # dry run, shows what it would merge
+./scripts/migrate-repo-keys.py --apply
 ```
 
 It resolves a directory through its checkout's remote where the checkout still exists, and through a matching `integration_test` recipe where it does not. Anything left over is listed with a guess read out of its run artifacts, which is a hint rather than a verdict; apply one deliberately with `--map <dir>=<key>`. Merged sources are renamed `<key>.migrated` rather than deleted.
