@@ -27,6 +27,7 @@ chained into after you approve the step before, so they must stay model-invokabl
 | `/marcjimenez:implement` | auto | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
 | `/marcjimenez:implement-beta` | user only | Opt-in trial of the build cycle with a required end-to-end verification phase before code review |
 | `/marcjimenez:setup` | user only | Configures external connections, API keys, code review settings, VCS settings, and default preferences |
+| `/marcjimenez:session-audit` | user only | Reads recent sessions and reports where the skills, CLAUDE.md and the hooks are not earning their context. Report only. Runs on a weekday schedule |
 
 ### Primitives (Auto-Invoked)
 
@@ -122,7 +123,7 @@ Enable per-project in `.claude/settings.json`:
 
 ### 3. Verify Installation
 
-Run `/skills` in Claude Code and verify that 17 `marcjimenez:*` skills appear in the list.
+Run `/skills` in Claude Code and verify that 18 `marcjimenez:*` skills appear in the list.
 
 ## Configuration
 
@@ -182,6 +183,17 @@ bash scripts/validate.sh
 ```
 
 This checks that manifests parse correctly, all 17 skills have valid frontmatter, all `/marcjimenez:*` references resolve, there are no stale references, and the `REPO_KEY` derivation is byte-identical in every skill that carries it.
+
+### Weekday session audit
+
+`/marcjimenez:session-audit` reads recent sessions and reports where the skills, CLAUDE.md and the hooks are no longer earning their context. It is report-only: it appends to `$CONFIG_HOME/audits/session-audit.md` and never edits a skill, opens a PR or files an issue. Install it as a launchd agent that runs weekdays at 10:07:
+
+```bash
+./scripts/install-session-audit.sh              # install
+./scripts/install-session-audit.sh uninstall    # remove
+```
+
+launchd rather than a cloud routine, because the audit reads `~/.claude/projects`, which only exists on the machine that wrote it. The Mac has to be awake and logged in; launchd runs a missed job on wake rather than skipping the day.
 
 ### Migrating an older cache
 
