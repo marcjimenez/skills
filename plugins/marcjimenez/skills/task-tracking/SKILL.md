@@ -23,8 +23,29 @@ Artifacts live under the marcjimenez config home, keyed by repo — never inside
 
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"          # macOS + Linux; Windows: %APPDATA%\marcjimenez
-TOP="$(git rev-parse --show-toplevel)"
-REPO_KEY="$(basename "$TOP")-$(printf '%s' "$TOP" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+# One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
+# get-url, not `config --get`: only get-url expands an insteadOf rewrite. A remote that is a local,
+# relative or Windows path is not a portable identity, so it falls through to the path below.
+REMOTE="$(git remote get-url origin 2>/dev/null || true)"
+case "$REMOTE" in *://*|*@*:*) ;; *) REMOTE="" ;; esac
+# Lowercase FIRST, so an upper-case scheme or a .GIT suffix is stripped by the patterns below rather
+# than surviving into the key. tr, not sed's \L: BSD sed does not implement it and emits a literal L.
+# GitHub treats Owner/Repo and owner/repo as one repository, so this also stops them hashing to two.
+REPO_KEY="$(printf '%s' "$REMOTE" | tr '[:upper:]' '[:lower:]' \
+  | sed -E 's#/+$##; s#^[a-z+]+://##; s#^[^/@]*@##; s#^[^/:]+(:[0-9]+)?[:/]##; s#\.git$##; s#[/ ]#-#g')"
+case "$REPO_KEY" in ""|.|..|-*|*:*|*\\*) REPO_KEY="" ;; esac
+if [ -z "$REPO_KEY" ]; then
+  # --git-common-dir is the MAIN checkout's git dir from inside a worktree, where --show-toplevel is
+  # the worktree and would split the cache. --path-format=absolute (git 2.31+) also canonicalizes.
+  G="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null || true)"
+  [ -n "$G" ] && G="$(cd -- "$G" 2>/dev/null && pwd -P)"
+  # Only a normal checkout's common dir ends in /.git. A submodule's is .git/modules/<name> and a bare
+  # repo's is the repo itself; for those the common dir IS the identity, so do not strip a parent.
+  case "$G" in */.git) R="${G%/.git}" ;; *) R="$G" ;; esac
+  [ -n "$R" ] && REPO_KEY="$(basename "$R" .git)-$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+fi
+unset REMOTE G R   # scratch only; do not leak generic names back to the caller
+[ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
 RUN_DIR="$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>"
 mkdir -p "$RUN_DIR"
 # task file: $RUN_DIR/todo.md
@@ -35,6 +56,13 @@ underscores → hyphens, strip other punctuation (e.g. "Add OAuth login" → `ad
 ONCE. If `/marcjimenez:plan` already produced artifacts for this feature, reuse its `<slug>` so `research.md`,
 `plan.md`, and `todo.md` share one `runs/<slug>/` directory. If the branch is `{prefix}/{slug}`, the branch
 slug IS the slug.
+
+One cache serves every worktree of a repo, so two parallel workspaces can reach for the same `<slug>`.
+The task file records its `branch:` for exactly this reason. Before creating `runs/<slug>/`, read any
+`todo.md` already there. A matching `branch:` means the directory is your own earlier run, so reuse it. A
+different one means somebody else is mid-flight, so suffix your directory with your whole branch name,
+slashes to hyphens: `fix/oauth-token-refresh` sharing the slug `oauth-token-refresh` gets
+`runs/oauth-token-refresh--fix-oauth-token-refresh`. Branch names are unique, so the suffix always is.
 
 ## Writing tasks
 

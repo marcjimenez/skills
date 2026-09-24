@@ -65,6 +65,33 @@ for name in $handoffs; do
   fi
 done
 
+echo "== REPO_KEY derivation is identical everywhere =="
+# It is copy-pasted into every skill that needs it because a skill cannot import. It drifted into two
+# variants once, which is how every Conductor workspace ended up with its own cache. Compare the WHOLE
+# block from its first comment line, and pin the count so a block deleted outright cannot pass.
+key_expected=11
+key_block() {
+  awk '/^# One cache per REPOSITORY/{p=1} p{print} p&&/not in a git repository/{exit}' "$1"
+}
+key_files="$(grep -rl '^# One cache per REPOSITORY' plugins | sort)"
+key_count="$(printf '%s\n' "$key_files" | grep -c .)"
+key_sums="$(for f in $key_files; do key_block "$f" | md5 -q 2>/dev/null || key_block "$f" | md5sum | cut -d" " -f1; done | sort -u)"
+if [ "$key_count" -ne "$key_expected" ]; then
+  err "expected $key_expected copies of the REPO_KEY block, found $key_count"
+  note "a skill lost its copy, or a new one gained it — bump key_expected deliberately"
+elif [ "$(printf '%s\n' "$key_sums" | grep -c .)" -ne 1 ]; then
+  err "REPO_KEY derivation has drifted across $key_count files"
+  for f in $key_files; do
+    s="$(key_block "$f" | md5 -q 2>/dev/null || key_block "$f" | md5sum | cut -d" " -f1)"
+    note "  $s  $f"
+  done
+else
+  note "ok $key_count files, one block"
+fi
+grep -rn 'rev-parse --show-toplevel' plugins >/dev/null \
+  && err "--show-toplevel returns the worktree, not the repo; use --git-common-dir" \
+  || note "ok no --show-toplevel"
+
 echo "== no stale references =="
 if grep -rniE 'marc-workflow|langgraph-agent|joinkudos' plugins/marcjimenez README.md .claude-plugin >/dev/null; then
   err "stale reference (marc-workflow/langgraph-agent/joinkudos) present"

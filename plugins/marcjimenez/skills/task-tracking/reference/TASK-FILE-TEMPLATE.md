@@ -5,6 +5,8 @@ Write to `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/todo.md`:
 ```markdown
 # {Feature Name}
 
+branch: {prefix}/{slug}
+
 ## Implementation
 - [ ] {atomic task} — verify: {exact check}
 - [ ] {atomic task} — verify: {exact check}

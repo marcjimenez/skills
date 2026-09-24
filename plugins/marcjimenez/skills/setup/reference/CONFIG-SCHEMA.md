@@ -5,13 +5,75 @@ precedence as everything else (inline args → per-repo → global → built-in 
 written into the target repo.
 
 ```
-$CONFIG_HOME/global/config.json             # global default
-$CONFIG_HOME/repos/<REPO_KEY>/config.json   # per-repo override (wins over global)
-$CONFIG_HOME/repos/<REPO_KEY>/utilities.md  # this repo's reusable helpers, written by /marcjimenez:code-review
-$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/  # durable run artifacts (research.md, plan.md, todo.md, review.md)
-$CONFIG_HOME/practices/<technology>.md      # technology briefs, shared across every repo
-$CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by skills (see below)
+$CONFIG_HOME/global/config.json                  # global default
+$CONFIG_HOME/repos/<REPO_KEY>/config.json        # per-repo override (wins over global)
+$CONFIG_HOME/repos/<REPO_KEY>/utilities.md       # this repo's reusable helpers, written by /marcjimenez:code-review
+$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/       # run artifacts (research.md, plan.md, todo.md, review.md)
+$CONFIG_HOME/practices/<technology>.md           # technology briefs, shared across every repo
+$CONFIG_HOME/secrets.env                         # API keys, chmod 600, sourced by skills (see below)
 ```
+
+## `REPO_KEY`: one cache per repository
+
+`REPO_KEY` is `owner-repo` from the origin remote (this repo is `marcjimenez-skills`), so every worktree and every Conductor workspace of a
+repository shares one cache. This matters most for `integration_test`, whose recipe is expensive to derive,
+and for `code_review.waivers`, where a divergence should be settled once rather than per checkout.
+
+```bash
+# One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
+# get-url, not `config --get`: only get-url expands an insteadOf rewrite. A remote that is a local,
+# relative or Windows path is not a portable identity, so it falls through to the path below.
+REMOTE="$(git remote get-url origin 2>/dev/null || true)"
+case "$REMOTE" in *://*|*@*:*) ;; *) REMOTE="" ;; esac
+# Lowercase FIRST, so an upper-case scheme or a .GIT suffix is stripped by the patterns below rather
+# than surviving into the key. tr, not sed's \L: BSD sed does not implement it and emits a literal L.
+# GitHub treats Owner/Repo and owner/repo as one repository, so this also stops them hashing to two.
+REPO_KEY="$(printf '%s' "$REMOTE" | tr '[:upper:]' '[:lower:]' \
+  | sed -E 's#/+$##; s#^[a-z+]+://##; s#^[^/@]*@##; s#^[^/:]+(:[0-9]+)?[:/]##; s#\.git$##; s#[/ ]#-#g')"
+case "$REPO_KEY" in ""|.|..|-*|*:*|*\\*) REPO_KEY="" ;; esac
+if [ -z "$REPO_KEY" ]; then
+  # --git-common-dir is the MAIN checkout's git dir from inside a worktree, where --show-toplevel is
+  # the worktree and would split the cache. --path-format=absolute (git 2.31+) also canonicalizes.
+  G="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null || true)"
+  [ -n "$G" ] && G="$(cd -- "$G" 2>/dev/null && pwd -P)"
+  # Only a normal checkout's common dir ends in /.git. A submodule's is .git/modules/<name> and a bare
+  # repo's is the repo itself; for those the common dir IS the identity, so do not strip a parent.
+  case "$G" in */.git) R="${G%/.git}" ;; *) R="$G" ;; esac
+  [ -n "$R" ] && REPO_KEY="$(basename "$R" .git)-$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)"
+fi
+unset REMOTE G R   # scratch only; do not leak generic names back to the caller
+[ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
+```
+
+Four details in that block are load-bearing, so change them only deliberately:
+
+- `git remote get-url`, not `git config --get remote.origin.url`. Only `get-url` expands an `insteadOf`
+  rewrite, so a short-alias remote like `myorg:api` resolves to the real URL rather than becoming its own
+  key.
+- `tr` for lowercasing, not sed's `\L`. BSD sed does not implement `\L` and turns it into a literal `L`,
+  which would corrupt every key on macOS. Lowercasing at all is because GitHub treats `O/R` and `o/r` as
+  one repository while they hash as two.
+- The `case` that empties a key containing `:` or starting with `-`. A local-path remote like
+  `/srv/git/r.git` would otherwise produce the directory name `-srv-git-r`, which every coreutils tool
+  reads as an option. Such a remote falls through to the path fallback, which is the better identity for
+  a local clone anyway.
+- `--path-format=absolute --git-common-dir` in the fallback. `--git-common-dir` returns the MAIN
+  checkout's git directory from inside a worktree, where `--show-toplevel` returns the worktree and
+  splits the cache. It is documented as relative to the current directory, so `--path-format=absolute`
+  makes it both absolute and canonical, which is also what keeps `/tmp` and `/private/tmp` from hashing
+  to two keys for one repo. `--path-format` needs Git 2.31, hence the bare retry after the `||`.
+- The `case` on `$G`. Only a normal checkout's common directory ends in `/.git`. A submodule's is
+  `.git/modules/<name>` and a bare repo's is the repository itself, so stripping a parent there would
+  key every submodule of one superproject, and every bare repo in one directory, to the same cache.
+
+One edge is documented rather than defended against: the same `owner/repo` on two different hosts collides
+into one key. Cargo keeps the host in its canonical URL for exactly this reason, so the divergence is
+deliberate rather than an oversight. For a personal cache the extra capture group is not worth it.
+
+The derivation is copy-pasted into every skill that needs it, because a skill cannot import. It drifted
+into two variants once, which is what produced a cache directory per workspace, so `scripts/validate.sh`
+now fails the build if the copies stop matching. Existing path-keyed directories are folded into
+repository-keyed ones by `scripts/migrate-repo-keys.py`, which is a dry run unless given `--apply`.
 
 ```json
 {
