@@ -1,6 +1,6 @@
 ---
 name: setup
-description: Configure marcjimenez — external connections and their API keys, code-review depth, VCS/PR settings, and the default minimalism intensity, persisted to your marcjimenez config. Run once to get started, or any time to change the policy.
+description: Configure marcjimenez — external connections and their API keys, code-review settings, VCS/PR settings, and the default minimalism intensity, persisted to your marcjimenez config. Run once to get started, or any time to change the policy.
 disable-model-invocation: true
 ---
 
@@ -49,13 +49,11 @@ Prefer to PRINT this block for the user to run in their own terminal: the agent-
 interactive TTY for `read -rs`, and a key pasted into the chat lands in the conversation transcript. Only
 run it inline yourself if the user explicitly asks — and name that transcript risk when you do.
 
-## 2. Code-review depth
+## 2. Code review
 
-Code review is adaptive by default — triage picks the reviewers each diff warrants from all eight, so there
-is nothing required here. Offer the optional knobs only: `reviewers` (a shorter candidate set to permanently
-drop reviewers a repo never needs), `adaptive: false` (run every reviewer on every diff), plus
-`confidence_threshold`, `max_rounds`, `adversarial_verification`. Field detail: `/marcjimenez:code-review`
-`reference/REVIEW-DEPTH.md`.
+Code review runs the same two agents on every diff and scales its own depth to the diff's size, so there is
+nothing required here. Offer its two optional knobs, `max_rounds` and `waivers`, only if asked; both are
+documented in `reference/CONFIG-SCHEMA.md`.
 
 `/marcjimenez:resolve-code-review` (triages a PR's existing review comments) reads a `resolve_code_review`
 section with two optional knobs, both default true: `auto_reply_bots` (post a clear rebuttal to a bot

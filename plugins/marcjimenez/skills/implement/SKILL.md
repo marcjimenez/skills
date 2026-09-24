@@ -2,7 +2,7 @@
 name: implement
 description: >-
   Run the full build cycle — branch, grill requirements, track tasks, build with minimalism discipline,
-  verify, adversarial review, and open a PR. Use PROACTIVELY after a plan is approved or when the user says
+  verify, review the diff, and open a PR. Use PROACTIVELY after a plan is approved or when the user says
   "build it", "implement", "go ahead", or confirms a plan.
 ---
 

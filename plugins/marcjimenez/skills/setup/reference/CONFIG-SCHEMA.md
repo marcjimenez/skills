@@ -5,8 +5,11 @@ precedence as everything else (inline args → per-repo → global → built-in 
 written into the target repo.
 
 ```
-$CONFIG_HOME/global/config.json            # global default
-$CONFIG_HOME/repos/<REPO_KEY>/config.json  # per-repo override (wins over global)
+$CONFIG_HOME/global/config.json             # global default
+$CONFIG_HOME/repos/<REPO_KEY>/config.json   # per-repo override (wins over global)
+$CONFIG_HOME/repos/<REPO_KEY>/utilities.md  # this repo's reusable helpers, written by /marcjimenez:code-review
+$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/  # durable run artifacts (research.md, plan.md, todo.md, review.md)
+$CONFIG_HOME/practices/<technology>.md      # technology briefs, shared across every repo
 $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by skills (see below)
 ```
 
@@ -14,7 +17,7 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
 {
   "defaults": { "ponytail_intensity": "full" },
 
-  "code_review": { "adaptive": true, "...": "see /marcjimenez:code-review reference/REVIEW-DEPTH.md" },
+  "code_review": { "max_rounds": 3, "waivers": [] },
 
   "resolve_code_review": { "auto_reply_bots": true, "auto_resolve": true },
 
@@ -42,10 +45,19 @@ $CONFIG_HOME/secrets.env                    # API keys, chmod 600, sourced by sk
 
 ## `defaults` and `code_review`
 
-`defaults.ponytail_intensity` (`lite|full|ultra`) is the shared minimalism default. The `code_review`
-section (adaptive, reviewers, thresholds, verification, waivers) is owned and documented by
-`/marcjimenez:code-review` in its `reference/REVIEW-DEPTH.md` — read that for its field detail; the candidate set
-and triage mapping live in code-review's `SKILL.md`.
+`defaults.ponytail_intensity` (`lite|full|ultra`) is the shared minimalism default, honoured wherever code
+gets written or cut.
+
+`code_review` has two fields, both optional. `/marcjimenez:code-review` runs its two agents on every diff,
+so there is nothing to select or tune beyond these.
+
+`adaptive`, `reviewers`, `confidence_threshold` and `adversarial_verification` were removed in 3.0.0. An
+existing config may still carry them; they are ignored rather than rejected, so nothing needs migrating.
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `max_rounds` | int | fix-and-re-review loop cap (default `3`) |
+| `waivers` | array | accepted best-practices divergences `{area, divergence, reason}`; a finding matching one is not re-flagged on later reviews |
 
 ## `resolve_code_review`
 
