@@ -27,6 +27,7 @@ chained into after you approve the step before, so they must stay model-invokabl
 | `/marcjimenez:implement` | auto | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
 | `/marcjimenez:implement-beta` | user only | Opt-in trial of the build cycle with a required end-to-end verification phase before code review |
 | `/marcjimenez:setup` | user only | Configures external connections, API keys, code review settings, VCS settings, and default preferences |
+| `/marcjimenez:session-audit` | user only | Reads recent sessions and reports where the skills, CLAUDE.md and the hooks are not earning their context. Report only. Runs on a weekday schedule |
 
 ### Primitives (Auto-Invoked)
 
@@ -122,7 +123,7 @@ Enable per-project in `.claude/settings.json`:
 
 ### 3. Verify Installation
 
-Run `/skills` in Claude Code and verify that 17 `marcjimenez:*` skills appear in the list.
+Run `/skills` in Claude Code and verify that 18 `marcjimenez:*` skills appear in the list.
 
 ## Configuration
 

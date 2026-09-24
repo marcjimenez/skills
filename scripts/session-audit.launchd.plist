@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>dev.marcjimenez.session-audit</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string>
+    <string>-lc</string>
+    <string>cd __REPO__ &amp;&amp; exec claude -p "/marcjimenez:session-audit" --permission-mode acceptEdits</string>
+  </array>
+
+  <!-- Weekdays at 10:07. Not :00, because every scheduled job in the world lands on the hour. -->
+  <key>StartCalendarInterval</key>
+  <array>
+    <dict><key>Weekday</key><integer>1</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Weekday</key><integer>2</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Weekday</key><integer>3</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Weekday</key><integer>4</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>
+    <dict><key>Weekday</key><integer>5</integer><key>Hour</key><integer>10</integer><key>Minute</key><integer>7</integer></dict>
+  </array>
+
+  <key>StandardOutPath</key><string>__LOGDIR__/session-audit.log</string>
+  <key>StandardErrorPath</key><string>__LOGDIR__/session-audit.err</string>
+  <key>RunAtLoad</key><false/>
+</dict>
+</plist>
