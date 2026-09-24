@@ -36,12 +36,19 @@ explicit reuse decisions. Writes a plan artifact; does NOT write product code.
 ```bash
 CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/marcjimenez"   # Windows: %APPDATA%\marcjimenez
 # One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
-# The no-remote fallback uses --git-common-dir: --show-toplevel returns the worktree, splitting the cache.
-REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
-  | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
-[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
-  && R="$(CDPATH= cd -- "$(dirname "$G")" && pwd -P)" \
+# get-url, not `config --get`: only get-url expands an insteadOf rewrite. Lowercased with tr, not
+# sed's \L, which BSD sed does not implement and silently turns into a literal L.
+REPO_KEY="$(git remote get-url origin 2>/dev/null \
+  | sed -E 's#^([a-z+]+://[^/]+/|[^/:]+:)##; s#\.git$##; s#[/ ]#-#g' | tr '[:upper:]' '[:lower:]')"
+# A local-path remote leaves a leading '-', which every coreutils tool reads as an option; an unknown
+# scheme leaves a ':'. Either way the repo path below is the better identity, so fall through.
+case "$REPO_KEY" in ""|-*|*:*) REPO_KEY="" ;; esac
+# --git-common-dir is the MAIN checkout's git dir from inside a worktree, where --show-toplevel is the
+# worktree and would split the cache. --path-format=absolute makes it absolute AND canonical.
+[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" \
+  && [ -n "$G" ] && R="$(dirname "$G")" \
   && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
+[ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
 ```
 
 The plan artifact lives under `$CONFIG_HOME` — never inside the target repo.

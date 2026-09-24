@@ -8,6 +8,7 @@ own runs. This folds them together under the key the current derivation produces
 Dry run by default. Pass --apply to move anything.
 """
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -15,6 +16,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections import Counter
 from pathlib import Path
 
@@ -143,6 +145,22 @@ def merge_configs(dst_path, src_paths):
     return merged, log
 
 
+def write_json(path, data):
+    """Write via a sibling temp plus os.replace, which POSIX guarantees is atomic.
+
+    Mid-loop this file is the only copy of the accumulated waiver union: the sources merged before it
+    have already been renamed .migrated, so a truncated write loses them.
+    """
+    fd, tmp = tempfile.mkstemp(dir=path.parent)
+    try:
+        with os.fdopen(fd, "w") as fh:
+            fh.write(json.dumps(data, indent=2) + "\n")
+        os.replace(tmp, path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
 def free_path(path):
     """shutil.move onto an existing directory moves INTO it, so never hand it a name in use."""
     if not path.exists():
@@ -248,7 +266,7 @@ def main():
 
     if not args.apply:
         print("Nothing changed. Re-run with --apply to move.")
-        return
+        return 0
 
     for new, olds in sorted(groups.items()):
         dst = REPOS / new
@@ -260,20 +278,28 @@ def main():
 
         merged, log = merge_configs(dst / "config.json", [s / "config.json" for s in sources])
         if merged:
-            (dst / "config.json").write_text(json.dumps(merged, indent=2) + "\n")
+            write_json(dst / "config.json", merged)
 
-        for src in sources:
-            runs = src / "runs"
-            for sub in sorted(runs.iterdir()) if runs.is_dir() else []:
-                target = free_path(dst / "runs" / sub.name)
-                if target.name != sub.name:
-                    log.append(f"      run slug {sub.name} collided, kept as {target.name}")
-                target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.move(src=str(sub), dst=str(target))
-            if (src / "utilities.md").exists() and not (dst / "utilities.md").exists():
-                shutil.move(src=str(src / "utilities.md"), dst=str(dst / "utilities.md"))
-            # Renamed, never deleted, so a bad merge is reversible.
-            shutil.move(src=str(src), dst=str(free_path(src.with_name(src.name + ".migrated"))))
+        # Every move registers its own inverse. If anything raises, the stack unwinds and the group is
+        # put back; pop_all() discards the inverses once the whole group has landed.
+        with contextlib.ExitStack() as undo:
+            for src in sources:
+                runs = src / "runs"
+                for sub in sorted(runs.iterdir()) if runs.is_dir() else []:
+                    target = free_path(dst / "runs" / sub.name)
+                    if target.name != sub.name:
+                        log.append(f"      run slug {sub.name} collided, kept as {target.name}")
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(sub, target)
+                    undo.callback(shutil.move, target, sub)
+                if (src / "utilities.md").exists() and not (dst / "utilities.md").exists():
+                    shutil.move(src / "utilities.md", dst / "utilities.md")
+                    undo.callback(shutil.move, dst / "utilities.md", src / "utilities.md")
+                # Renamed, never deleted, so a bad merge is reversible.
+                parked = free_path(src.with_name(src.name + ".migrated"))
+                shutil.move(src, parked)
+                undo.callback(shutil.move, parked, src)
+            undo.pop_all()
 
         n_runs = len(list((dst / "runs").iterdir())) if (dst / "runs").is_dir() else 0
         n_waivers = len(merged.get("code_review", {}).get("waivers", []))
@@ -282,7 +308,8 @@ def main():
             print(line)
 
     print("\nSources kept as <key>.migrated. Delete them once you are satisfied.")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

@@ -20,21 +20,43 @@ repository shares one cache. This matters most for `integration_test`, whose rec
 and for `code_review.waivers`, where a divergence should be settled once rather than per checkout.
 
 ```bash
-REPO_KEY="$(git config --get remote.origin.url 2>/dev/null \
-  | sed -E 's#^(https?://[^/]+/|git@[^:]+:|ssh://[^/]+/)##; s#\.git$##; s#[/ ]#-#g')"
-[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --git-common-dir 2>/dev/null)" \
-  && R="$(CDPATH= cd -- "$(dirname "$G")" && pwd -P)" \
+# One cache per REPOSITORY, keyed by the origin remote so every worktree and workspace share it.
+# get-url, not `config --get`: only get-url expands an insteadOf rewrite. Lowercased with tr, not
+# sed's \L, which BSD sed does not implement and silently turns into a literal L.
+REPO_KEY="$(git remote get-url origin 2>/dev/null \
+  | sed -E 's#^([a-z+]+://[^/]+/|[^/:]+:)##; s#\.git$##; s#[/ ]#-#g' | tr '[:upper:]' '[:lower:]')"
+# A local-path remote leaves a leading '-', which every coreutils tool reads as an option; an unknown
+# scheme leaves a ':'. Either way the repo path below is the better identity, so fall through.
+case "$REPO_KEY" in ""|-*|*:*) REPO_KEY="" ;; esac
+# --git-common-dir is the MAIN checkout's git dir from inside a worktree, where --show-toplevel is the
+# worktree and would split the cache. --path-format=absolute makes it absolute AND canonical.
+[ -n "$REPO_KEY" ] || REPO_KEY="$(G="$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" \
+  && [ -n "$G" ] && R="$(dirname "$G")" \
   && printf '%s-%s' "$(basename "$R")" "$(printf '%s' "$R" | { command -v shasum >/dev/null 2>&1 && shasum || sha1sum; } | cut -c1-8)")"
+[ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
 ```
 
-The fallback covers a repo with no remote. It uses `--git-common-dir`, which returns the MAIN checkout's
-git directory from inside a worktree, where `--show-toplevel` returns the worktree and splits the cache.
-`pwd -P` rather than `pwd`, because a logical path and its physical form hash differently, which is how
-`/tmp` and `/private/tmp` used to produce two keys for one repo.
+Four details in that block are load-bearing, so change them only deliberately:
 
-Two edges, documented rather than defended against because both are rare. The same `owner/repo` on two
-different hosts collides into one key. A bare repo puts the fallback one directory above where you would
-expect. Neither is worth the code it would take to handle.
+- `git remote get-url`, not `git config --get remote.origin.url`. Only `get-url` expands an `insteadOf`
+  rewrite, so a short-alias remote like `myorg:api` resolves to the real URL rather than becoming its own
+  key.
+- `tr` for lowercasing, not sed's `\L`. BSD sed does not implement `\L` and turns it into a literal `L`,
+  which would corrupt every key on macOS. Lowercasing at all is because GitHub treats `O/R` and `o/r` as
+  one repository while they hash as two.
+- The `case` that empties a key containing `:` or starting with `-`. A local-path remote like
+  `/srv/git/r.git` would otherwise produce the directory name `-srv-git-r`, which every coreutils tool
+  reads as an option. Such a remote falls through to the path fallback, which is the better identity for
+  a local clone anyway.
+- `--path-format=absolute --git-common-dir` in the fallback. `--git-common-dir` returns the MAIN
+  checkout's git directory from inside a worktree, where `--show-toplevel` returns the worktree and
+  splits the cache. It is documented as relative to the current directory, so `--path-format=absolute`
+  makes it both absolute and canonical, which is also what keeps `/tmp` and `/private/tmp` from hashing
+  to two keys for one repo.
+
+One edge is documented rather than defended against: the same `owner/repo` on two different hosts collides
+into one key. Cargo keeps the host in its canonical URL for exactly this reason, so the divergence is
+deliberate rather than an oversight. For a personal cache the extra capture group is not worth it.
 
 The derivation is copy-pasted into every skill that needs it, because a skill cannot import. It drifted
 into two variants once, which is what produced a cache directory per workspace, so `scripts/validate.sh`

@@ -71,8 +71,8 @@ echo "== REPO_KEY derivation is identical everywhere =="
 # Compare the WHOLE block, not just the lines containing REPO_KEY=. The sed pattern and the printf
 # format sit on continuation lines, and drift there is exactly what split the cache before.
 key_sums="$(for f in $(grep -rl 'REPO_KEY=' plugins); do
-  awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5 -q 2>/dev/null \
-    || awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5sum | cut -d" " -f1
+  awk '/^REPO_KEY="\$\(git remote get-url/{p=1} p{print} p&&/not in a git repository/{exit}' "$f" | md5 -q 2>/dev/null \
+    || awk '/^REPO_KEY="\$\(git remote get-url/{p=1} p{print} p&&/not in a git repository/{exit}' "$f" | md5sum | cut -d" " -f1
 done | sort -u)"
 key_files="$(grep -rl 'REPO_KEY=' plugins | wc -l | tr -d ' ')"
 if [ "$(printf '%s\n' "$key_sums" | grep -c .)" -eq 1 ]; then
@@ -80,8 +80,8 @@ if [ "$(printf '%s\n' "$key_sums" | grep -c .)" -eq 1 ]; then
 else
   err "REPO_KEY derivation has drifted across $key_files files"
   for f in $(grep -rl 'REPO_KEY=' plugins); do
-    s="$(awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5 -q 2>/dev/null \
-      || awk '/^REPO_KEY="\$\(git config/{p=1} p{print} p&&/cut -c1-8\)"\)"$/{exit}' "$f" | md5sum | cut -d" " -f1)"
+    s="$(awk '/^REPO_KEY="\$\(git remote get-url/{p=1} p{print} p&&/not in a git repository/{exit}' "$f" | md5 -q 2>/dev/null \
+      || awk '/^REPO_KEY="\$\(git remote get-url/{p=1} p{print} p&&/not in a git repository/{exit}' "$f" | md5sum | cut -d" " -f1)"
     note "  $s  $f"
   done
 fi
