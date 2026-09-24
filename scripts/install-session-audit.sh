@@ -31,6 +31,17 @@ plutil -lint "$PLIST" >/dev/null
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$PLIST"
 
+# A Conductor workspace is disposable; a job pointing at one breaks the day it is deleted, and
+# launchd reports that only in the error log nobody reads.
+MAIN="$(cd "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")" && pwd -P)"
+if [ "$MAIN" != "$PWD" ]; then
+  echo
+  echo "WARNING: installed from a worktree, not the main checkout."
+  echo "  running from : $PWD"
+  echo "  main checkout: $MAIN"
+  echo "  Re-run this from the main checkout once the change is merged, or the job dies with the worktree."
+fi
+
 echo "installed $LABEL — weekdays 10:07, logs in $LOGDIR"
 echo "run now:  launchctl kickstart -p gui/$(id -u)/$LABEL"
 echo "remove:   ./scripts/install-session-audit.sh uninstall"
