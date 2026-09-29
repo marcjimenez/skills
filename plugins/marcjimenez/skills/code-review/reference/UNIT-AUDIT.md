@@ -15,7 +15,7 @@ Repos move and briefs age; an unverified citation is worse than no citation, bec
 wrong once gets ignored afterwards. Name any `utilities.md` entry whose path no longer resolves, so the
 caller can drop it.
 
-The caller resolves both paths and hands them over, along with the intensity and the three doctrine files
+The caller resolves both paths and hands them over, along with the intensity and the four doctrine files
 the prompt points at. An agent that was given none of those says so rather than searching blind.
 
 ## The prompt
@@ -40,7 +40,10 @@ the prompt points at. An agent that was given none of those says so rather than 
 >    speculative feature should go. Same behaviour in fewer lines counts here too. If the unit is worth
 >    keeping, say where else it should now be called from.
 > 4. **Is it written to be maintained?** Judge naming, shape, control flow depth, and error handling at
->    the boundary. Name the specific edit, not "consider refactoring".
+>    the boundary. Name the specific edit, not "consider refactoring". In TypeScript and Python this
+>    includes types: `any` / `Any` is a finding wherever it appears, and so is every hatch that replaces
+>    it (`as any`, `as unknown as T`, `@ts-ignore`, bare `# type: ignore`, an untyped `def`). Give the
+>    replacement from `/marcjimenez:coding-style` `reference/TYPING.md`, not just the objection.
 > 5. **Do its comments and docstrings earn their place?** Apply `/marcjimenez:coding-style`
 >    `reference/COMMENTS.md`, which owns the anti-patterns. Assume they are overwritten, because they
 >    usually are. Quote the comment and give the shorter replacement, not just the objection. Never flag on
@@ -59,7 +62,8 @@ the prompt points at. An agent that was given none of those says so rather than 
 > Tags: `repo:` this repo already has it · `stdlib:` the standard library covers it · `native:` the
 > framework or platform covers it · `dep:` an installed package already exports it · `delete:` dead code,
 > unused flexibility, or a speculative feature · `yagni:` one caller, inline it · `shrink:` same behaviour,
-> fewer lines · `maintain:` a specific readability or error-handling edit · `comment:` a comment or
+> fewer lines · `maintain:` a specific readability or error-handling edit · `type:` an `any`/`Any` or an
+> escape hatch standing in for one · `comment:` a comment or
 > docstring to cut or shorten · `doc:` a doc this change made wrong.
 >
 > End with `net: -<N> lines possible.` If a unit is clean, say so in one line and move on.

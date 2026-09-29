@@ -83,9 +83,9 @@ resolves none of §0 for itself, so hand over the expanded absolute paths rather
 - the diff, the `review.md` checklist on a deep diff, and any CLAUDE.md or CONTRIBUTING for the touched area
 - `$CONFIG_HOME/practices/` and `$CONFIG_HOME/repos/$REPO_KEY/utilities.md`, the two caches it reads
 - `defaults.ponytail_intensity` (default `full`), which decides how hard it cuts
-- the three files the prompt defers to, by absolute path, so nothing sits two hops from here and risks a
-  partial read: `reuse/reference/CLIMB-THE-LADDER.md`, `reuse/reference/REINVENTION-CATALOG.md`, and
-  `coding-style/reference/COMMENTS.md`
+- the four files the prompt defers to, by absolute path, so nothing sits two hops from here and risks a
+  partial read: `reuse/reference/CLIMB-THE-LADDER.md`, `reuse/reference/REINVENTION-CATALOG.md`,
+  `coding-style/reference/COMMENTS.md`, and `coding-style/reference/TYPING.md`
 
 It returns its verdicts rather than writing them. You replace the `## Verdicts` section of `review.md` with
 its `VERDICTS` block, and fold its `UTILITIES` block into `utilities.md`, dropping any entry it reported as
