@@ -23,6 +23,9 @@ without committing to an implementation.
    per `reference/TRADEOFFS.md`.
 
 4. **Compare + recommend.** Build the comparison matrix and pick a winner with a one-paragraph rationale.
+   Render `brainstorm.html` beside the markdown with `/marcjimenez:plan` `assets/render.py`: a matrix of
+   four approaches is the case where a rendered table beats a terminal outright. Shell and classes:
+   `/marcjimenez:plan` `reference/HTML-ARTIFACT.md`.
 
 Write to `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/brainstorm.md` (never inside the target repo).
 
