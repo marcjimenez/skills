@@ -60,6 +60,17 @@ unset REMOTE G R   # scratch only; do not leak generic names back to the caller
 [ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
 ```
 
+Then render it for reading, beside the markdown:
+
+```bash
+"${CLAUDE_PLUGIN_ROOT}"/skills/plan/assets/render.py \
+  --title "Plan — <slug>" --body /tmp/body.html --out "$RUN_DIR/plan.html" --open
+```
+
+The markdown stays the source of record, because `/marcjimenez:implement` reads it and you can grep it. The
+HTML is what gets read. Body format, the shared classes and the questions page: `reference/HTML-ARTIFACT.md`.
+Never hand-assemble the page; the script owns the mermaid loader for a reason that file explains.
+
 The plan artifact lives under `$CONFIG_HOME` — never inside the target repo.
 
 ## End
