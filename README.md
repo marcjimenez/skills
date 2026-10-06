@@ -16,16 +16,14 @@ All configuration and artifacts are stored in a cross-platform directory outside
 ### Orchestrators
 
 `brainstorm` and `setup` are entry points: nothing hands off to them, so they carry
-`disable-model-invocation` and run only when you type them. `implement-beta` carries it for a different
-reason: it would otherwise compete with `implement` for the same triggers. `plan` and `implement` are
-chained into after you approve the step before, so they must stay model-invokable or the handoff errors.
+`disable-model-invocation` and run only when you type them. `plan` and `implement` are chained into after
+you approve the step before, so they must stay model-invokable or the handoff errors.
 
 | Command | Invocation | Purpose |
 |---------|-----------|---------|
 | `/marcjimenez:plan` | auto | Produces research-backed implementation plans with concrete code examples and task breakdowns |
 | `/marcjimenez:brainstorm` | user only | Explores 2-4 solution approaches with tradeoffs before committing to a direction |
-| `/marcjimenez:implement` | auto | Executes full build cycle: branch creation, requirements gathering, task tracking, implementation, verification, code review, and PR creation |
-| `/marcjimenez:implement-beta` | user only | Opt-in trial of the build cycle with a required end-to-end verification phase before code review |
+| `/marcjimenez:implement` | auto | Executes the full build cycle: claim the issue, branch, requirements, task tracking, build loop, end-to-end verification against a real environment, code review, and PR creation |
 | `/marcjimenez:setup` | user only | Configures external connections, API keys, code review settings, VCS settings, and default preferences |
 
 ### Primitives (Auto-Invoked)
@@ -45,9 +43,9 @@ chained into after you approve the step before, so they must stay model-invokabl
 | `marcjimenez:task-tracking` | When starting multi-step work; maintains durable task file with verifiable completion criteria |
 | `marcjimenez:issue` | When creating or filing a GitHub issue; learns the repo's labeling conventions, drafts the body in its idiom, and applies the ready label when the ticket passes the agent-readiness gate |
 
-The `implement` orchestrator hard-gates code review before any push, so nothing leaves your machine unreviewed.
+The `implement` orchestrator hard-gates two things before any push: the feature is proven against a real environment, and the local diff is reviewed. Neither is skippable, so nothing leaves your machine unverified or unreviewed.
 
-`implement-beta` is a time-boxed trial of that same cycle with an added end-to-end phase, and it never auto-triggers: invoke it by name. Promotion over `implement` is gated on three green runs across two or more repos, one prod run whose cleanup was proven by re-query, one discovery run that derived a working recipe unaided, and one waiver run on a diff with no runtime surface.
+The end-to-end phase arrived through `implement-beta`, which ran as a parallel trial until it had cleared three green runs across two repos, a prod run whose cleanup was proven by re-query, a discovery run that derived a working recipe unaided, and a waiver run on a diff with no runtime surface. It has since been promoted into `implement` and removed.
 
 ## Architecture
 
@@ -75,13 +73,9 @@ flowchart TD
     CR -->|agent 2, mandatory| BP
     UA --> CA[(caches: practice briefs + repo utilities)]
     BP --> CA
-    U -->|invoke by name| IMB[/marcjimenez:implement-beta/]
-    IMB --> TT
-    IMB --> CS
-    IMB -->|required, waiver recorded| IT[marcjimenez:integration-test]
+    IM -->|required, waiver recorded| IT[marcjimenez:integration-test]
     IT --> ITD[discover recipe or load config]
     IT --> ITR[run scenarios, inspect DB, undo, re-query]
-    IMB -->|mandatory gate| CR
     U -->|invoke| IT
     U -->|invoke| RCR[/marcjimenez:resolve-code-review/]
     RCR --> RCRF[fetch PR review threads]
@@ -122,7 +116,7 @@ Enable per-project in `.claude/settings.json`:
 
 ### 3. Verify Installation
 
-Run `/skills` in Claude Code and verify that 17 `marcjimenez:*` skills appear in the list.
+Run `/skills` in Claude Code and verify that 16 `marcjimenez:*` skills appear in the list.
 
 ## Configuration
 
