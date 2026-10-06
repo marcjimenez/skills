@@ -9,7 +9,10 @@ branch: {prefix}/{slug}
 
 ## Implementation
 - [ ] {atomic task} — verify: {exact check}
+      files: {paths this task will touch, comma separated}
+      blocked-by: {task numbers, omit when nothing blocks it}
 - [ ] {atomic task} — verify: {exact check}
+      files: {paths}
 
 ## Tests
 - [ ] {test task} — verify: {test passes}
