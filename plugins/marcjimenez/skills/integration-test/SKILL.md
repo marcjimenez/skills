@@ -5,7 +5,7 @@ description: >-
   the actual calls, inspects the database rows they wrote, then undoes them and proves the undo worked.
   Learns each repo's run recipe once and reuses it; discovers the recipe from the repo's own files when
   none exists. Always asks which environment to target before doing anything. Invoked by name, or by
-  /marcjimenez:implement-beta as its end-to-end phase. Triggers on: "integration test", "test it end to
+  /marcjimenez:implement as its end-to-end phase. Triggers on: "integration test", "test it end to
   end", "does this actually work", "run it against prod", "test against dev".
 ---
 
