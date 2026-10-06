@@ -110,6 +110,10 @@ and a worktree can skip tests that read gitignored fixtures, a local database or
 report green. Every worker passing in isolation is not the claim being made. This is the only check that
 sees what was actually produced.
 
+Reconverge by taking each unit's **declared paths**, never by merging its branch: a worktree is cut from
+the default branch rather than yours, so a branch merge can cleanly revert work the unit never touched.
+`reference/FAN-OUT.md` has the measured case.
+
 Also reconcile what the workers reported touching against what they declared. A file edited but not
 declared is not a failure by itself, but it means the partition was wrong and the next run's `files:` lines
 need widening.

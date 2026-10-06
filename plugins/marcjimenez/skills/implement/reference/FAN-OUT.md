@@ -67,6 +67,28 @@ Each brief carries exactly five things:
 - **What to return**: the branch name, the PR URL if it opened one, and any file it touched that was not
   on its list.
 
+## A worktree is not cut from your branch
+
+**Measured, not assumed.** `isolation: "worktree"` cuts the worker's worktree from the repository's
+default branch, not from whatever branch the orchestrator is on. Both workers in the first real run came
+back based on `origin/main` while the orchestrator sat three commits ahead on a feature branch.
+
+Merging such a branch does not conflict. It cleanly reverts everything the orchestrator had done: a
+twelve-line description change arrived carrying the deletion of a reference file, the resurrection of a
+deleted skill, and the reversal of an entire merged PR. Git reports it as a successful merge.
+
+Two rules follow, and the second is the one that saves you:
+
+1. **Tell each worker its base explicitly**, and have it confirm the worktree sits on that base before it
+   starts. A worker cannot know what the orchestrator is building on.
+2. **Never merge a worker's branch. Take its declared paths.**
+   ```bash
+   git checkout <worker-branch> -- <each path from that unit's files: line>
+   ```
+   This is the point of `files:`. A path-scoped checkout cannot carry a revert of something the unit never
+   touched, which a branch merge silently can. It also makes an undeclared edit visible: a file the worker
+   changed but did not declare simply does not come across.
+
 ## Reconvergence
 
 **Independent PRs by default.** Each worker opens its own PR. This is the smaller machinery and needs no
@@ -101,4 +123,5 @@ Then one `/marcjimenez:code-review` over the whole change, not per unit.
 | Agent count or token spend runs away | A worker inherited the Agent tool | Restrict the leaf tool set, do not ask politely |
 | Everything conflicts | Units sliced by layer | Re-slice vertically; a horizontal split cannot be made disjoint |
 | Review never terminates | `code-review` run mid-fan-out | Review once, at the end, over the whole change |
-| A unit edits a file it never declared | `files:` was a guess | The post-reconvergence gate catches it; widen the list next time |
+| A unit edits a file it never declared | `files:` was a guess | The path-scoped checkout drops it silently; the gate catches the consequence. Widen the list next time |
+| A clean merge reverts the orchestrator's work | The worktree was cut from the default branch | Take declared paths, never merge the branch |

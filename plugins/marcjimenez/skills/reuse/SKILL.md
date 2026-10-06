@@ -2,11 +2,13 @@
 name: reuse
 description: >-
   Enforces the Climb-the-Ladder reuse doctrine BEFORE any new function, helper, utility, type, or
-  abstraction is written, or any dependency added. Stops at the first rung that holds: YAGNI, existing
-  repo utility, stdlib, native platform/framework feature, installed dependency, one-liner, minimum new
-  code. Use PROACTIVELY whenever about to create new code or add a package. Triggers on: "let me write a
-  helper", custom debounce/throttle/retry/validation/date logic, a new util, "add a library", "should I
-  write my own".
+  abstraction is written, or any dependency added. Stops at the first rung that holds: YAGNI,
+  existing repo utility, stdlib, native platform/framework feature, installed dependency,
+  one-liner, minimum new code. Use PROACTIVELY whenever about to create new code, add a package, or
+  audit existing code for duplication. Triggers on: "is there a util that already does this", "do
+  we already have one", "DRY", "DRY this up", "can we reuse", "don't reinvent the wheel", "fix this
+  at the source", "do we need a library for this", "write a helper", and any request to create a
+  new file, function, component, or type.
 ---
 
 # Reuse — Climb the Ladder before writing code
