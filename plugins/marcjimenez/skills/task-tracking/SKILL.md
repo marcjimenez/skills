@@ -69,10 +69,10 @@ slashes to hyphens: `fix/oauth-token-refresh` sharing the slug `oauth-token-refr
 Two optional lines under a task, and both exist for the same reason: a flat checklist cannot say what can
 run at the same time.
 
-- **`files:`** — the paths the task will touch. `/marcjimenez:implement` partitions work by comparing
-  these, so two tasks naming the same path are never run in parallel. The list is a declaration, not a
-  guarantee: a task that touches something it did not declare collides anyway, which is why the
-  partition is a precondition and never the only check.
+- **`files:`** — the paths the task will touch, and both paths when a task renames one.
+  `/marcjimenez:implement` partitions work by comparing these and reconverges by patching exactly them,
+  so a path left off the list is a path that silently does not come back. What the partition can and
+  cannot promise: `/marcjimenez:implement` `reference/FAN-OUT.md`.
 - **`blocked-by:`** — the task numbers that must land first. Without edges there is no way to tell which
   tasks are ready, so a plan that omits them forces everything sequential, which is a safe default rather
   than a failure.

@@ -69,7 +69,8 @@ GATE: present the task list; get confirmation before coding.
 ## Phase 3.5 — Serial, or fan out?
 
 Default is serial. Fan out only when the change will not fit one context window, its units are each
-demoable alone, and those units can be made file-disjoint from their `files:` lines. Any one of the three
+demoable alone, and those units can be made file-disjoint from their `files:` lines. Dispatch only the
+units whose `blocked-by:` tasks have already landed, and recompute that set as each one does. Any one of the three
 failing means serial, and saying which one failed is the whole decision.
 
 Print the verdict in one line before Phase 4, e.g.:
@@ -82,7 +83,7 @@ or
 > in the same group and run in order.
 
 Mechanics, the worker brief, the recursion guard and both reconvergence shapes: `reference/FAN-OUT.md`.
-A fanned-out run replaces Phase 4 with that file's loop and rejoins here at Phase 4.5.
+A fanned-out run replaces Phase 4 with that file's loop and rejoins at Phase 4.5 below.
 
 ## Phase 4 — Build loop (per task)
 
@@ -105,14 +106,11 @@ Skip on a serial run; the Phase 5 gauntlet already covers it.
 After the units are back together, build and run the suite again **in the main checkout, not a worktree**.
 This is blocking.
 
-Per-unit green does not survive reconvergence: add/add conflicts in a shared registry drop code silently,
-and a worktree can skip tests that read gitignored fixtures, a local database or credentials and still
-report green. Every worker passing in isolation is not the claim being made. This is the only check that
-sees what was actually produced.
+Per-unit green is not the claim being made; `reference/FAN-OUT.md` has the measured reasons.
 
-Reconverge by taking each unit's **declared paths**, never by merging its branch: a worktree is cut from
-the default branch rather than yours, so a branch merge can cleanly revert work the unit never touched.
-`reference/FAN-OUT.md` has the measured case.
+Reconverge by applying a patch scoped to each unit's **declared paths**, never by merging its branch. A
+worktree is cut from the default branch rather than yours, so a branch merge can cleanly revert work the
+unit never touched, and `git checkout -- <paths>` applies nothing at all when a declared path was deleted.
 
 Also reconcile what the workers reported touching against what they declared. A file edited but not
 declared is not a failure by itself, but it means the partition was wrong and the next run's `files:` lines

@@ -1,16 +1,14 @@
 ---
 name: writing-for-agents
 description: >-
-  The house style for agent-facing prose. Reading or editing a file named SKILL.md, CLAUDE.md or AGENTS.md
-  is a trigger by itself, with no phrase needed: load this before the first edit to one, however small, and
-  before creating one. Use PROACTIVELY whenever creating or editing a skill, a memory or instructions file,
-  a plugin manifest description, or any document written to be consumed by an AI agent. Enforces the
-  three-tier information ladder, the context-load vs cognitive-load budgets, checkable and exhaustive
-  completion criteria, positive/leading-word phrasing, and pruning to a single source of truth. Triggers
-  on: any edit to SKILL.md, CLAUDE.md, AGENTS.md or a skill's reference files; writing or rewording a
-  frontmatter description or its trigger phrases; authoring an agent prompt, subagent definition or
-  workflow doc; "write a description for this skill", "why isn't this skill firing", "make this skill
-  trigger".
+  The house style for agent-facing prose. Editing or creating a file named SKILL.md, CLAUDE.md or AGENTS.md is
+  a trigger by itself, with no phrase needed: load this before the first edit, however small. Use PROACTIVELY
+  for a skill's reference files, a plugin manifest description, or any document written to be consumed by an
+  AI agent. Enforces the three-tier information ladder, the context-load vs cognitive-load budgets, checkable
+  and exhaustive completion criteria, positive/leading-word phrasing, and pruning to a single source of truth.
+  Triggers on: writing or rewording a frontmatter description or its trigger phrases; authoring an agent
+  prompt, subagent definition or workflow doc; "write a description for this skill", "why isn't this skill
+  firing", "make this skill trigger".
 ---
 
 # Writing for agents

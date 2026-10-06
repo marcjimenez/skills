@@ -8,7 +8,7 @@ written into the target repo.
 $CONFIG_HOME/global/config.json                  # global default
 $CONFIG_HOME/repos/<REPO_KEY>/config.json        # per-repo override (wins over global)
 $CONFIG_HOME/repos/<REPO_KEY>/utilities.md       # this repo's reusable helpers, written by /marcjimenez:code-review
-$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/       # run artifacts (research.md, plan.md, todo.md, review.md)
+$CONFIG_HOME/repos/<REPO_KEY>/runs/<slug>/       # run artifacts (research.md, plan.md, todo.md, review.md, notes.md, integration.md)
 $CONFIG_HOME/practices/<technology>.md           # technology briefs, shared across every repo
 $CONFIG_HOME/secrets.env                         # API keys, chmod 600, sourced by skills (see below)
 ```
