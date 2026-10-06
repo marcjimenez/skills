@@ -50,6 +50,15 @@ allowance the check reports every careful session as a violation.
 A non-empty list is the most serious thing the digest produces, because the gate is what everything else
 rests on. Name the session and what it pushed.
 
+The match is deliberately broad (`review`, `audit`, `pre-push`). The first version matched only
+"code review" and missed descriptions like "Review the rename diff" and "Pre-push review of the breaker
+diff", so 10 of 23 flagged sessions over 90 days were false positives. At a 43% false-positive rate the
+check stops being read, which costs more than the handful of extra matches a broad pattern lets through.
+
+Watch for the cross-repo case specifically: 7 of the 13 genuine violations found in the first audit were a
+session opened in one repo's worktree running `cd <other repo> && git push`. The gate is written as a
+property of the conversation, and that is exactly where it slips.
+
 ## Tool mix
 
 `top_tools` is context, not a target. It is worth reading when one tool dwarfs the rest: a session that is

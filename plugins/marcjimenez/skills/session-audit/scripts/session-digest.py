@@ -41,7 +41,10 @@ SKILL_LOAD = "Base directory for this skill:"
 PUSH = re.compile(r"\b(git push|gh pr create)\b")
 # A review is usually dispatched as subagents rather than invoked as a skill; a gate check that ignores
 # that reports every careful session as a violation.
-REVIEW_AGENT = re.compile(r"code[- ]review|reviewing this (?:diff|change)|unit audit", re.I)
+# Deliberately broad. The first version matched only "code review" and missed real subagent
+# descriptions like "Review the rename diff" and "Pre-push review of the breaker diff", giving the
+# gate check a 43% false-positive rate over 90 days. A check that cries wolf stops being read.
+REVIEW_AGENT = re.compile(r"\breview\b|\baudit\b|pre-push", re.I)
 
 
 def positive(kind, allow_zero=False):
