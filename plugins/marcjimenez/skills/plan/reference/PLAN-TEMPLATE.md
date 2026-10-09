@@ -47,7 +47,7 @@ has no runtime surface at all.
 - [ ] <atomic task> — verify: <exact check>
 - [ ] <atomic task> — verify: <exact check>
 
-Add these two only when the plan hands off to `/marcjimenez:implement-beta`. `/marcjimenez:implement` has
+Add these two when the plan hands off to `/marcjimenez:implement`, which has
 no phase that can check them, and it may not stop with an unchecked box:
 
 - [ ] End-to-end run — verify: /marcjimenez:integration-test green on every scenario above

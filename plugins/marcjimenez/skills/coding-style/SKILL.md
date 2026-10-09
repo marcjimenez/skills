@@ -4,6 +4,7 @@ description: >-
   The house coding style — apply to ALL code you write, edit, or refactor. Enforces ponytail minimalism
   (the best code is the code never written: deletion over addition, boring over clever, fewest files,
   shortest working diff), the `ponytail:` shortcut-comment convention, root-cause-not-symptom bug fixes,
+  strict typing (`any`/`Any` and their escape hatches are banned outright),
   and the guardrails that are NEVER cut at any intensity (validation, error handling, security,
   accessibility, comprehension, the one runnable check). Repo CLAUDE.md and existing conventions win over
   house style. Use PROACTIVELY whenever writing or changing non-trivial code.
@@ -59,6 +60,15 @@ server and a token is neither, so it rots and misleads people into thinking it i
 its own review burden — an e2e harness written this way turned out to contain a code injection, because it
 interpolated externally-sourced names into a shell and Python. If a check deserves to be permanent, write
 it as a real test.
+
+## Strict types, always
+
+Never `any` in TypeScript, never `Any` in Python, and never the escape hatches that stand in for them.
+A value that is genuinely dynamic is `unknown` or `object` and is narrowed where it enters, so nothing
+untyped crosses a function boundary. This is a guardrail: no intensity cuts it.
+
+What to use instead, per case, plus the compiler settings that make the rule real rather than
+aspirational: `reference/TYPING.md`.
 
 ## Intensity + guardrails
 

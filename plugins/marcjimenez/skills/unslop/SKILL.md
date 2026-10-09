@@ -93,7 +93,8 @@ catalog those two lack and the concrete rewrite moves. Follow them; do not resta
   constructs.
 - Replace hand-rolled utilities with the stdlib or an already-installed dependency
   (`/marcjimenez:reuse`).
-- Fix `as any` / `# type: ignore` escape hatches by typing correctly; verify hallucinated or stale imports
+- Fix `as any` / `# type: ignore` escape hatches by typing correctly, per `/marcjimenez:coding-style`
+  `reference/TYPING.md`; verify hallucinated or stale imports
   resolve.
 
 ## Attribution: the text is the user's, always

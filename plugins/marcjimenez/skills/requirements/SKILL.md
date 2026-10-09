@@ -18,7 +18,11 @@ Interrogate the user on EVERY applicable dimension — the full table is in `ref
 (Scope, I/O, Errors, Integration, Contracts, Edge cases, Done, End-to-end).
 
 **DO:**
-- Ask all questions in ONE message (not one at a time).
+- Ask all questions in ONE message (not one at a time). At three or more, render a questions page instead:
+  `/marcjimenez:plan` `reference/HTML-ARTIFACT.md`. Each question carries what is needed to decide it, a
+  diagram where the shape is the question and a code sample where the difference is in the code, with
+  radios, checkboxes for multi-answer, and one button that copies every answer as a single line to paste
+  back. Below three, a message is lighter than a page deserves.
 - Challenge vague answers ("what do you mean by 'handle errors'?").
 - Restate your understanding as a numbered spec.
 

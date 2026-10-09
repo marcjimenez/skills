@@ -60,6 +60,17 @@ unset REMOTE G R   # scratch only; do not leak generic names back to the caller
 [ -n "$REPO_KEY" ] || { echo "not in a git repository" >&2; exit 1; }
 ```
 
+Then render it for reading, beside the markdown:
+
+```bash
+"${CLAUDE_PLUGIN_ROOT}"/skills/plan/assets/render.py \
+  --title "Plan — <slug>" --body /tmp/body.html --out "$RUN_DIR/plan.html" --open
+```
+
+The markdown stays the source of record, because `/marcjimenez:implement` reads it and you can grep it. The
+HTML is what gets read. Body format, the shared classes and the questions page: `reference/HTML-ARTIFACT.md`.
+Never hand-assemble the page; the script owns the mermaid loader for a reason that file explains.
+
 The plan artifact lives under `$CONFIG_HOME` — never inside the target repo.
 
 ## End
@@ -75,7 +86,8 @@ Present the plan summary (1-2 sentences of what will be built and what will be r
 If the user confirms (yes / y / go / proceed / build / build it / approved):
   Invoke `/marcjimenez:implement` — it auto-detects this plan's artifacts (research.md, plan.md) by slug.
   If the plan carries Integration scenarios and the user wants them run as part of the build, offer
-  `/marcjimenez:implement-beta` instead: same cycle, plus a required end-to-end phase before review.
+  `/marcjimenez:implement` — it claims the issue, builds, proves the feature against a real environment,
+  reviews the diff, and opens the PR.
 
 If the user wants to review first (show / review / details):
   Display the full plan.md contents, then re-ask.

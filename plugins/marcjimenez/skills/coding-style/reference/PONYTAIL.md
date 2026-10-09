@@ -19,6 +19,9 @@ Never simplify away, at ANY intensity:
 - Understanding the problem fully (trace the real flow before picking a rung — a small diff you don't
   understand is a confident wrong fix)
 - Input validation at trust boundaries
+- Strict types. Never `any` in TypeScript or `Any` in Python, and never the hatches that replace it
+  (`as any`, `as unknown as T`, `@ts-ignore`, bare `# type: ignore`, an untyped `def`). A dynamic value
+  is `unknown` / `object` and is narrowed at the boundary it entered. Ladder: `TYPING.md`
 - Error handling that prevents data loss
 - Security measures
 - Accessibility basics
