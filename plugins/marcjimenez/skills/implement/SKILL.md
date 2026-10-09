@@ -215,6 +215,6 @@ known limitations.
 9. **Never commit to the base branch.** Branch + PR always.
 10. **Never stop with unchecked tasks.**
 11. **Fresh base branch first.** Stale branches = conflicts.
-12. **Fan out only when it will not fit, and never by layer.** A unit is a vertical slice that can be
+12. **Climb the Ladder before writing code** (`/marcjimenez:reuse`); never cut a guardrail (`/marcjimenez:coding-style`).
+13. **Fan out only when it will not fit, and never by layer.** A unit is a vertical slice that can be
     demoed alone. Per-unit green is not the claim; the post-reconvergence gate is.
-13. **Climb the Ladder before writing code** (`/marcjimenez:reuse`); never cut a guardrail (`/marcjimenez:coding-style`).

@@ -65,7 +65,10 @@ say so in the brief and rely on the reuse hunt + repo evidence alone.
    before it enters the brief. Reuse the installed `deep-research` skill's fan-out/verify harness rather
    than building a new verifier.
 6. **Synthesize the brief** — write it per the format in `reference/RESEARCH-PLAYBOOK.md` to
-   `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/research.md`.
+   `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/research.md`, then render `research.html` beside it with
+   `/marcjimenez:plan` `assets/render.py`. A brief is mostly evidence, so it benefits most from the
+   rendering: citations become links, comparisons become tables, and an architecture claim becomes a
+   diagram. Shell, classes and the questions page: `/marcjimenez:plan` `reference/HTML-ARTIFACT.md`.
 
 The brief MUST deliver: sources with URLs, reusable utilities with import paths + why, best-practice notes,
 and concrete code examples to embed in the plan.
