@@ -2,8 +2,9 @@
 name: implement
 description: >-
   Runs the full build cycle: claim the issue, branch, grill requirements, track tasks, build with
-  minimalism discipline, prove the feature works against a real environment, review the local diff, and
-  open a PR carrying the completed task list and its evidence. Use PROACTIVELY after a plan is approved or
+  minimalism discipline, fanning work out across worktree-isolated subagents when it will not fit one
+  context window, prove the feature works against a real environment, review the local diff, and open a PR
+  carrying the completed task list and its evidence. Use PROACTIVELY after a plan is approved or
   when the user says "build it", "implement", "go ahead", or confirms a plan.
 ---
 
@@ -65,6 +66,25 @@ On a waiver run, both verifies become the waiver line itself, in the task file a
 
 GATE: present the task list; get confirmation before coding.
 
+## Phase 3.5 — Serial, or fan out?
+
+Default is serial. Fan out only when the change will not fit one context window, its units are each
+demoable alone, and those units can be made file-disjoint from their `files:` lines. Dispatch only the
+units whose `blocked-by:` tasks have already landed, and recompute that set as each one does. Any one of the three
+failing means serial, and saying which one failed is the whole decision.
+
+Print the verdict in one line before Phase 4, e.g.:
+
+> Serial: 4 tasks, 6 files, fits one window.
+
+or
+
+> Fan-out: 9 units, 3 file-disjoint groups, independent PRs — two units share `registry.ts` so they are
+> in the same group and run in order.
+
+Mechanics, the worker brief, the recursion guard and both reconvergence shapes: `reference/FAN-OUT.md`.
+A fanned-out run replaces Phase 4 with that file's loop and rejoins at Phase 4.5 below.
+
 ## Phase 4 — Build loop (per task)
 
 1. Implement the task. Before writing new code, the reuse + style disciplines apply automatically:
@@ -78,6 +98,23 @@ GATE: present the task list; get confirmation before coding.
 3. Mark `[x]` in the task file.
 4. Commit at logical boundaries (conventional prefix). One concern per commit.
 5. If you discover a new task mid-work, ADD it to the file before doing it.
+
+## Phase 4.5 — Post-reconvergence gate (fan-out only)
+
+Skip on a serial run; the Phase 5 gauntlet already covers it.
+
+After the units are back together, build and run the suite again **in the main checkout, not a worktree**.
+This is blocking.
+
+Per-unit green is not the claim being made; `reference/FAN-OUT.md` has the measured reasons.
+
+Reconverge by applying a patch scoped to each unit's **declared paths**, never by merging its branch. A
+worktree is cut from the default branch rather than yours, so a branch merge can cleanly revert work the
+unit never touched, and `git checkout -- <paths>` applies nothing at all when a declared path was deleted.
+
+Also reconcile what the workers reported touching against what they declared. A file edited but not
+declared is not a failure by itself, but it means the partition was wrong and the next run's `files:` lines
+need widening.
 
 ## Phase 5 — Pre-PR verification
 
@@ -179,3 +216,5 @@ known limitations.
 10. **Never stop with unchecked tasks.**
 11. **Fresh base branch first.** Stale branches = conflicts.
 12. **Climb the Ladder before writing code** (`/marcjimenez:reuse`); never cut a guardrail (`/marcjimenez:coding-style`).
+13. **Fan out only when it will not fit, and never by layer.** A unit is a vertical slice that can be
+    demoed alone. Per-unit green is not the claim; the post-reconvergence gate is.
