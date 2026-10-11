@@ -45,7 +45,14 @@ has no runtime surface at all.
 
 ## Task seed
 - [ ] <atomic task> — verify: <exact check>
+      files: <paths this task will touch>
+      blocked-by: <task numbers, omit when nothing blocks it>
 - [ ] <atomic task> — verify: <exact check>
+      files: <paths>
+
+Carry `files:` wherever the research already names the paths. `/marcjimenez:implement` partitions work by
+comparing them, so this is where parallelism is decided, and planning is where they are cheapest to write
+down. Omit both lines when the work is plainly serial.
 
 Add these two when the plan hands off to `/marcjimenez:implement`, which has
 no phase that can check them, and it may not stop with an unchecked box:

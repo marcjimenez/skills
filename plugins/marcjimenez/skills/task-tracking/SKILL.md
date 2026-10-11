@@ -64,6 +64,21 @@ different one means somebody else is mid-flight, so suffix your directory with y
 slashes to hyphens: `fix/oauth-token-refresh` sharing the slug `oauth-token-refresh` gets
 `runs/oauth-token-refresh--fix-oauth-token-refresh`. Branch names are unique, so the suffix always is.
 
+## `files:` and `blocked-by:`
+
+Two optional lines under a task, and both exist for the same reason: a flat checklist cannot say what can
+run at the same time.
+
+- **`files:`** — the paths the task will touch, and both paths when a task renames one.
+  `/marcjimenez:implement` partitions work by comparing these and reconverges by patching exactly them,
+  so a path left off the list is a path that silently does not come back. What the partition can and
+  cannot promise: `/marcjimenez:implement` `reference/FAN-OUT.md`.
+- **`blocked-by:`** — the task numbers that must land first. Without edges there is no way to tell which
+  tasks are ready, so a plan that omits them forces everything sequential, which is a safe default rather
+  than a failure.
+
+Omit both when the work is plainly serial. A `files:` line nobody will act on is noise.
+
 ## Writing tasks
 
 - Each task is ONE logical unit, completable without context-switching.
