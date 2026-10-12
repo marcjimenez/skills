@@ -10,6 +10,21 @@ fail=0
 note() { printf '  %s\n' "$1"; }
 err()  { printf 'FAIL: %s\n' "$1"; fail=1; }
 
+echo "== manifests pass claude plugin validate =="
+# The authoritative check. A hand-rolled json.tool parse says only that the JSON is well formed, and
+# `"agents": "./agents/"` is well-formed JSON that Claude Code refuses to load, which took the whole
+# plugin down for a day. Types, path existence and containment are only checked here.
+if command -v claude >/dev/null 2>&1; then
+  if claude plugin validate plugins/marcjimenez >/dev/null 2>&1; then
+    note "ok plugins/marcjimenez"
+  else
+    err "claude plugin validate failed"
+    claude plugin validate plugins/marcjimenez 2>&1 | sed 's/^/    /'
+  fi
+else
+  note "SKIPPED: claude CLI not on PATH (install it to run this check)"
+fi
+
 echo "== JSON manifests parse =="
 for j in .claude-plugin/marketplace.json plugins/marcjimenez/.claude-plugin/plugin.json; do
   python3 -m json.tool "$j" >/dev/null && note "ok $j" || err "invalid JSON: $j"
