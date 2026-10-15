@@ -26,9 +26,20 @@ explicit reuse decisions. Writes a plan artifact; does NOT write product code.
 
 4. **Check prior art.** Invoke `/marcjimenez:best-practices` in `advisory` mode on the chosen approach so the plan
    reflects proven design patterns and idiomatic dependency use, not just a workable sketch. It builds on the
-   research brief from step 2; fold its guidance into the code examples in the next step.
+   research brief from step 2; fold its guidance into the code examples in step 6.
 
-5. **Write the plan** to `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/plan.md` using
+5. **Pass the design gate.** Test the approach against both rules and change the approach when one fails;
+   a failure recorded as a risk is still a failure.
+   - **The next case is data, not code.** If supporting one more variant (a category, an intent, a
+     mutation, a phrase) would mean editing this code, the design is wrong. Reject per-case maps, phrase
+     lists and guards keyed on specific values in favour of the extension point the system already has: a
+     registry, a schema, config, or the prompt when a model makes the call. A closed domain the type system
+     enumerates, such as an enum or HTTP status codes, is not a case map.
+   - **One PR.** Plan the whole requirement as one PR. Split only when a part ships and can be demoed alone
+     and keeping it together would bury the change for a reviewer, and give that reason under Approach.
+     In-scope work is never parked as a follow-up.
+
+6. **Write the plan** to `$CONFIG_HOME/repos/$REPO_KEY/runs/<slug>/plan.md` using
    `reference/PLAN-TEMPLATE.md`. The plan MUST contain concrete **code examples** adapted to the repo's
    conventions, each with a source citation, plus a **Task seed** of atomic checkboxes with `verify:`
    fields.
