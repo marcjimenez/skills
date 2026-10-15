@@ -14,6 +14,7 @@ What's explicitly out of scope; hard constraints (perf, compat, deadlines).
 
 ## Approach
 The single chosen design in prose. A mermaid diagram if it clarifies flow.
+Delivery: one PR, or each PR and the reason it ships alone.
 
 ## Reuse decisions (from the Ladder)
 For each new piece: highest rung reached, what we reuse (import path), what we deliberately DON'T build.

@@ -1,6 +1,6 @@
 # Unit audit — the reuse, maintainability and comment prompt
 
-The prompt for the one reviewing agent, which never widens beyond the six questions below.
+The prompt for the one reviewing agent, which never widens beyond the seven questions below.
 
 ## Read the caches before searching
 
@@ -25,7 +25,7 @@ the prompt points at. An agent that was given none of those says so rather than 
 > wastes the reader's attention. Work the unit list you were given, one unit at a time, and give every unit
 > an explicit verdict. Silence is not a pass.
 >
-> For each unit, answer all six:
+> For each unit, answer all seven:
 >
 > 1. **Does this repo already have it?** grep for similar names, signatures and behaviour; check
 >    `shared` / `utils` / `common` / `lib` and sibling modules. Duplicated logic three directories away
@@ -39,16 +39,21 @@ the prompt points at. An agent that was given none of those says so rather than 
 >    implementation, or a config nobody sets should be inlined. Dead code, unused flexibility and a
 >    speculative feature should go. Same behaviour in fewer lines counts here too. If the unit is worth
 >    keeping, say where else it should now be called from.
-> 4. **Is it written to be maintained?** Judge naming, shape, control flow depth, and error handling at
+> 4. **Does the next case mean editing this code?** A map keyed on specific values, a list of phrases, or
+>    a guard that special-cases one input fails when supporting another variant would require changing
+>    the unit. Name the extension point the system already has (a registry, a schema, config, or the
+>    prompt when a model makes the call) and how the case moves there. A switch over a closed enum the
+>    type system checks is not a finding.
+> 5. **Is it written to be maintained?** Judge naming, shape, control flow depth, and error handling at
 >    the boundary. Name the specific edit, not "consider refactoring". In TypeScript and Python this
 >    includes types: `any` / `Any` is a finding wherever it appears, and so is every hatch that replaces
 >    it (`as any`, `as unknown as T`, `@ts-ignore`, bare `# type: ignore`, an untyped `def`). Give the
 >    replacement from `/marcjimenez:coding-style` `reference/TYPING.md`, not just the objection.
-> 5. **Do its comments and docstrings earn their place?** Apply `/marcjimenez:coding-style`
+> 6. **Do its comments and docstrings earn their place?** Apply `/marcjimenez:coding-style`
 >    `reference/COMMENTS.md`, which owns the anti-patterns. Assume they are overwritten, because they
 >    usually are. Quote the comment and give the shorter replacement, not just the objection. Never flag on
 >    a comment-to-code ratio; there is no defensible threshold and enforcing one produces fake comments.
-> 6. **Did this unit make a doc wrong?** Only for docs describing the surface you changed: a signature, a
+> 7. **Did this unit make a doc wrong?** Only for docs describing the surface you changed: a signature, a
 >    flag, an env var, an endpoint, a setup step, or a snippet that would now fail. New public behaviour
 >    with no documentation counts. Cite the doc `file:line` and the change that stales it.
 >
@@ -62,9 +67,9 @@ the prompt points at. An agent that was given none of those says so rather than 
 > Tags: `repo:` this repo already has it · `stdlib:` the standard library covers it · `native:` the
 > framework or platform covers it · `dep:` an installed package already exports it · `delete:` dead code,
 > unused flexibility, or a speculative feature · `yagni:` one caller, inline it · `shrink:` same behaviour,
-> fewer lines · `maintain:` a specific readability or error-handling edit · `type:` an `any`/`Any` or an
-> escape hatch standing in for one · `comment:` a comment or
-> docstring to cut or shorten · `doc:` a doc this change made wrong.
+> fewer lines · `case:` a per-case map or guard the next variant would have to edit · `maintain:` a
+> specific readability or error-handling edit · `type:` an `any`/`Any` or an escape hatch standing in for
+> one · `comment:` a comment or docstring to cut or shorten · `doc:` a doc this change made wrong.
 >
 > End with `net: -<N> lines possible.` If a unit is clean, say so in one line and move on.
 
